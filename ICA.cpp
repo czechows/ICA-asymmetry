@@ -20,14 +20,14 @@ private:
   double n;
   double d;
   matrix<double> Omega;
+  column_vector mW;
   column_vector sj1;
   column_vector sj2;
+  column_vector g;
+  double detW;
 
 
 public:
-  ICAC()
-  {
-  }
   ICAC( const matrix<double>& X, const column_vector& m, const matrix<double>& W, const column_vector& sigma, const column_vector& tau ):
     X(X),
     m(m),
@@ -36,8 +36,15 @@ public:
     tau(tau),
     n( X.nr() ),
     d( X.nc() ),
-    Omega( d, d )
+    Omega( d, d ),
+    sj1( n ),
+    sj2( n ),
+    g( n ),
+    detW( det(W) )
+
   {
+    mW = reshape_to_column_vector( join_cols( trans(m), W ) );
+    cout << "MW = \n" << mW << "\n";
   }
 
 
@@ -53,7 +60,7 @@ public:
 
 
 
-  static double my_func ( const column_vector& mW ) // to be substituted with the assymetry
+  static double l ( const column_vector& mW ) // to be substituted with the assymetry
   {
 
       const double x = mW(0); 
@@ -66,7 +73,7 @@ public:
 
 
 
-  static const column_vector my_func_derivative (const column_vector& mW ) // to be substituted with the assymetry derivative
+  static const column_vector gradl (const column_vector& mW ) // to be substituted with the assymetry derivative
   /*!
       ensures
           - returns the gradient vector for the rosen function
@@ -96,7 +103,7 @@ public:
 
       double result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
                objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-               my_func, my_func_derivative, starting_point, -1);
+               l, gradl, starting_point, -1);
 
       return make_pair( result, starting_point );
 
@@ -110,18 +117,26 @@ double ICA() {
   column_vector startp(2);
   startp = 4, 8;
 
-  ICAC my_ica;
   double min;
   column_vector argmin;
 
-  matrix<double> myMatrix(2,2);
-  myMatrix = 1,2,3,4;
-  cout << "MY MATRIX:\n" << myMatrix << "\n";
-  matrix<double> myMatrix2 = reshape_to_column_vector( myMatrix );
-  cout << "MY MATRIX:\n" << myMatrix2 << "\n";
-  matrix<double> myMatrix3 = join_cols( myMatrix2, startp );
-  cout << "MY MATRIX:\n" << myMatrix3 << "\n";
+  matrix<double> X(2,2);
+  X = 1,2,3,4;
 
+  matrix<double> W(2,2);
+  W = 1,2,3,4;
+ 
+  column_vector m(2);
+  m = 1,2;
+ 
+  column_vector sigma(2);
+  sigma = 1,2;
+ 
+  column_vector tau(2);
+  tau = 1,2;
+
+
+  ICAC my_ica( X, m ,W, sigma, tau );
   
   pair<double, column_vector> ica_args = my_ica.try_algorithm( startp );
 
