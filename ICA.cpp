@@ -10,7 +10,7 @@ using namespace Rcpp;
 
 typedef matrix<double,0,1> column_vector;
 
-
+// TODO: get rid of this struct?
 struct ICAC{
 
   private:  
@@ -178,19 +178,17 @@ column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the
 
 
 // [[Rcpp::export]]
-double ICA() {
+RcppExport SEXP ICA( NumericMatrix XX, NumericVector mm, NumericMatrix WW ) {
 
-  double min;
-  column_vector argmin;
+  std::vector< double > _X = as< std::vector<double> >(XX);
+  ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
 
-  ICAC::X = matrix<double>(3,2);
-  ICAC::X = 1,2,3,4,5,6;
+  std::vector< double > _W = as< std::vector<double> >(WW);
+  matrix<double> W = reshape( mat( _W ), WW.nrow(), WW.ncol() );
 
-  matrix<double> W(2,2);
-  W = 1,2,3,4;
-
-  column_vector m(2);
-  m = 2,4;
+  std::vector<double> _m = as< std::vector<double> >(mm);
+  column_vector m( _m.size() );
+  m = mat( _m );
 
   ICAC::d = W.nr();
   ICAC my_ica( m ,W );
@@ -209,5 +207,5 @@ double ICA() {
   cout << "minimum = " << result << "\n";
   */
 
-  return result;
+  return wrap(result);
 }
