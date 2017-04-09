@@ -7,140 +7,207 @@ using namespace std;
 using namespace dlib;
 using namespace Rcpp;
 
+
 typedef matrix<double,0,1> column_vector;
 
-class ICAC{
 
-private:  
-  matrix<double> X;
-  column_vector m;
-  matrix<double> W;
-  column_vector sigma;
-  column_vector tau;
-  double n;
-  double d;
-  matrix<double> Omega;
-  column_vector mW;
-  column_vector sj1;
-  column_vector sj2;
-  column_vector g;
-  double detW;
+struct ICAC{
 
+  private:  
+    column_vector m;
+    matrix<double> W;
 
-public:
-  ICAC( const matrix<double>& X, const column_vector& m, const matrix<double>& W, const column_vector& sigma, const column_vector& tau ):
-    X(X),
-    m(m),
-    W(W),
-    sigma(sigma),
-    tau(tau),
-    n( X.nr() ),
-    d( X.nc() ),
-    Omega( d, d ),
-    sj1( n ),
-    sj2( n ),
-    g( n ),
-    detW( det(W) )
-
+  public:
+    static double d;
+    column_vector mW;
+    static matrix<double> X;
+    ICAC( const column_vector& m, const matrix<double>& W ):
+      m(m),
+      W(W)
   {
     mW = reshape_to_column_vector( join_cols( trans(m), W ) );
-    cout << "MW = \n" << mW << "\n";
   }
 
+};
 
-  void sj_compute()
+
+double ICAC::d = 0.; 
+matrix<double> ICAC::X;
+
+
+double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
+{
+  double d = ICAC::d;
+
+  matrix<double> mW = reshape( _mW, d+1, d );
+  matrix<double> W = rowm(mW, range(1,d));
+  matrix<double> m = rowm(mW, 0);
+
+  int n = ICAC::X.nr();
+
+  column_vector s1(d);
+  column_vector s2(d);
+  column_vector g(d);
+
+  for( int j=0; j < d; j++ )
   {
-    double result = 0.;
+    s1(j)=0;
+    s2(j)=0;
 
-    for( int i = 0; i < n; i++ )
+    for( int i=0; i < n; i++ )
     {
-      result += 0;
+      double val = trans( colm(W,j) )*trans( rowm(ICAC::X,i) - m );
+
+      if( val <= 0. )
+        s1(j) += val*val;
+      else
+        s2(j) += val*val;
+
+    }
+
+    g(j) = pow(s1(j), 2./3.) + pow(s2(j), 1./3.);
+  }
+
+  double result = 1./pow( abs(det(W)), 2./3. );
+
+  for( int j=0; j<d; j++ )
+  {
+    result = result*g(j);
+  }
+
+  return log(result);
+}
+
+
+
+
+
+column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the assymetry derivative
+{
+  double d = ICAC::d;
+
+  column_vector result = _mW;
+
+  matrix<double> mW = reshape( _mW, d+1, d );
+  matrix<double> W = rowm(mW, range(1,d));
+  matrix<double> m = rowm(mW, 0);
+
+  matrix<double> inv_tran_W = trans( inv( W ) );
+
+  int n = ICAC::X.nr();
+
+  column_vector s1(d);
+  column_vector s2(d);
+
+  column_vector grad_s1(d);
+  column_vector grad_s2(d);
+
+  matrix<double> der_s1 = zeros_matrix<double>(d,d);
+  matrix<double> der_s2 = zeros_matrix<double>(d,d);
+
+  for( int j=0; j < d; j++ )
+  {
+    s1(j)=0;
+    s2(j)=0;
+    grad_s1(j)=0;
+    grad_s2(j)=0;
+
+    for( int i=0; i < n; i++ )
+    {
+      double val = trans( colm(W,j) )*trans( rowm(ICAC::X,i) - m );
+
+      if( val <= 0. )
+      {
+        s1(j) += val*val;
+        grad_s1(j) += 2*val;
+
+        for( int k=0; k<d; k++ )
+        {
+          der_s1(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
+        }
+
+      }
+      else
+      {
+        s2(j) += val*val;
+        grad_s2(j) += 2*val;
+
+
+        for( int k=0; k<d; k++ )
+        {
+          der_s2(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
+        }
+      }
+    }
+  }
+
+  for( int k=0; k < d; k++ ) // TODO: rewrite as matrix multiplication (vectorize)
+  {
+    result(k) = 0.;
+
+    for( int j=0; j < d; j++ )
+    {
+      double factor =  -1. /( pow( s1(j), 1./3. ) + pow( s2(j), 1./3. ) );
+      double factor1 = 1. /( 3. * pow( s1(j), 2./3. ) );
+      double factor2 = 1. /( 3. * pow( s2(j), 2./3. ) );
+
+      result(k) += factor*( factor1*grad_s1(j)*W(j,k) + factor2*grad_s2(j)*W(j,k) );
     }
   }
 
 
-
-  static double l ( const column_vector& mW ) // to be substituted with the assymetry
+  for( int p=0; p < d; p++ ) // TODO: rewrite as matrix multiplication (vectorize)
   {
+    for( int k=0; k < d; k++ )
+    {
+      double factor =  1. /( pow( s1(p), 1./3. ) + pow( s2(p), 1./3. ) );
+      double factor1 = 1. /( 3. * pow( s1(p), 2./3. ) );
+      double factor2 = 1. /( 3. * pow( s2(p), 2./3. ) );
 
-      const double x = mW(0); 
-      const double y = mW(1);
-
-      return pow(x,2) + pow(y,2);
+      result( d-1 + p*d + k ) = factor*( factor1*der_s1(p,k) + factor2*der_s2(p,k) ) - (2./3.)*inv_tran_W( p, k ); 
+    }
   }
 
+  return result;
+}
 
 
 
 
-  static const column_vector gradl (const column_vector& mW ) // to be substituted with the assymetry derivative
-  /*!
-      ensures
-          - returns the gradient vector for the rosen function
-  !*/
-  {
-      const double x = mW(0);
-      const double y = mW(1);
 
-      // make us a column vector of length 2
-      column_vector res(2);
-
-      // now compute the gradient vector
-      res(0) = 2*x; // derivative of rosen() with respect to x
-      res(1) = 2*y;              // derivative of rosen() with respect to y
-      return res;
-  }
-
-
-  pair<double, column_vector> try_algorithm( column_vector starting_point )
-  {
-      // The other arguments to find_min() are the function to be minimized, its derivative, 
-      // then the starting point, and the last is an acceptable minimum value of the function() 
-      // function.  That is, if the algorithm finds any inputs to function() that gives an output 
-      // value <= -1 then it will stop immediately.  Usually you supply a number smaller than 
-      // the actual global minimum.  So since the smallest output of the function() function is 0 
-      // we just put -1 here which effectively causes this last argument to be disregarded.
-
-      double result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
-               objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-               l, gradl, starting_point, -1);
-
-      return make_pair( result, starting_point );
-
-      // Once the function ends the starting_point vector will contain the optimum point 
-  }
-};
 
 
 // [[Rcpp::export]]
 double ICA() {
-  column_vector startp(2);
-  startp = 4, 8;
 
   double min;
   column_vector argmin;
 
-  matrix<double> X(2,2);
-  X = 1,2,3,4;
+  ICAC::X = matrix<double>(3,2);
+  ICAC::X = 1,2,3,4,5,6;
 
   matrix<double> W(2,2);
   W = 1,2,3,4;
- 
+
   column_vector m(2);
-  m = 1,2;
- 
-  column_vector sigma(2);
-  sigma = 1,2;
- 
-  column_vector tau(2);
-  tau = 1,2;
+  m = 2,4;
 
+  ICAC::d = W.nr();
+  ICAC my_ica( m ,W );
 
-  ICAC my_ica( X, m ,W, sigma, tau );
-  
-  pair<double, column_vector> ica_args = my_ica.try_algorithm( startp );
+  // TODO: erase this
+  cout << "lnl = " << lnl( my_ica.mW ) << "\n";
+  cout << "grad_lnl = \n" << grad_lnl( my_ica.mW ) << "\n";
 
-  cout << "Function attains minimum:\n" << ica_args.second <<  ", which equals to: " << ica_args.first << endl;
+  double result = 0.;
+  // TODO: this has to work
+  /*
+  double result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
+      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
+      lnl, grad_lnl, my_ica.mW, -1);
 
-  return ica_args.first;
+  cout << "minimum = " << result << "\n";
+  */
+
+  return result;
 }
