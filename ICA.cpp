@@ -193,15 +193,17 @@ const column_vector grad_lnl (const column_vector& _mW ) // to be substituted wi
 // [[Rcpp::export]]
 RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW ) {
 
-  std::vector< double > _X = as< std::vector<double> >(XX);
-  ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
+  std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );
+  ICAC::X = reshape( mat(_X ), XX.nrow(), XX.ncol() );
 
-  std::vector< double > _W = as< std::vector<double> >(WW);
+  std::vector< double > _W = as< std::vector<double> >( transpose( WW ) );
   matrix<double> W = reshape( mat( _W ), WW.nrow(), WW.ncol() );
+
 
   std::vector<double> _m = as< std::vector<double> >(mm);
   column_vector m( _m.size() );
   m = mat( _m );
+
 
   ICAC::d = W.nr();
   ICAC my_ica( m ,W );
