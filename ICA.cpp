@@ -65,7 +65,7 @@ double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
 
     }
 
-    g(j) = pow(s1(j), 2./3.) + pow(s2(j), 1./3.);
+    g(j) = pow(s1(j), 1./3.) + pow(s2(j), 1./3.);
   }
 
   double result = 1./pow( abs(det(W)), 2./3. );
@@ -164,7 +164,7 @@ column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the
       double factor1 = 1. /( 3. * pow( s1(p), 2./3. ) );
       double factor2 = 1. /( 3. * pow( s2(p), 2./3. ) );
 
-      result( d-1 + p*d + k ) = factor*( factor1*der_s1(p,k) + factor2*der_s2(p,k) ) - (2./3.)*inv_tran_W( p, k ); 
+      result( d + p*d + k ) = factor*( factor1*der_s1(p,k) + factor2*der_s2(p,k) ) - (2./3.)*inv_tran_W( p, k ); 
     }
   }
 
@@ -195,6 +195,7 @@ RcppExport SEXP ICA( NumericMatrix XX, NumericVector mm, NumericMatrix WW ) {
 
   // TODO: erase this
   cout << "lnl = " << lnl( my_ica.mW ) << "\n";
+  cout << "der lnl = \n" << derivative(lnl, 1e-5)( my_ica.mW ) << "\n";
   cout << "grad_lnl = \n" << grad_lnl( my_ica.mW ) << "\n";
 
   double result = 0.;
