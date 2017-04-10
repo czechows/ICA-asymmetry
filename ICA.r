@@ -1,7 +1,8 @@
 Rcpp::sourceCpp('ICA.cpp')
 
-myX = matrix( 1:6, nrow=3, ncol=2 )
-myM = c(8,4)
-myW = matrix( 1:4, nrow=2, ncol=2 )
+myX = matrix( runif(n=16, min=-1, max=1), nrow=8, ncol=2 )
+
+myM = runif( n=2, min=-1, max=1 ) 
+myW = matrix( runif(n=4,min=-1,max=1), nrow=2, ncol=2 )
 
 ICA( myX, myM, myW )
