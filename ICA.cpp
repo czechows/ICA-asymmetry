@@ -82,7 +82,7 @@ double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
 
 
 
-column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the assymetry derivative
+const column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the assymetry derivative
 {
   double d = ICAC::d;
 
@@ -148,10 +148,16 @@ column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the
     for( int j=0; j < d; j++ )
     {
       double factor =  -1. /( pow( s1(j), 1./3. ) + pow( s2(j), 1./3. ) );
+      
       double factor1 = 1. /( 3. * pow( s1(j), 2./3. ) );
-      double factor2 = 1. /( 3. * pow( s2(j), 2./3. ) );
+      if( s1(j) == 0. )
+        factor1 = 0.;
 
-      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) );
+      double factor2 = 1. /( 3. * pow( s2(j), 2./3. ) );
+      if( s2(j) == 0. )
+        factor2 = 0.;
+
+      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); // ERROR IN W_jk IN THE PAPER?
     }
   }
 
@@ -160,11 +166,18 @@ column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the
   {
     for( int k=0; k < d; k++ )
     {
-      double factor =  1. /( pow( s1(p), 1./3. ) + pow( s2(p), 1./3. ) );
-      double factor1 = 1. /( 3. * pow( s1(p), 2./3. ) );
-      double factor2 = 1. /( 3. * pow( s2(p), 2./3. ) );
+      double factor =  1. /( pow( s1(k), 1./3. ) + pow( s2(k), 1./3. ) );
 
-      result( d + k*d + p ) = factor*( factor1*der_s1(p,k) + factor2*der_s2(p,k) ) - (2./3.)*inv_tran_W( k, p ); 
+      double factor1 = 1. /( 3. * pow( s1(k), 2./3. ) );
+      if( s1(k) == 0. )
+        factor1 = 0.;
+
+
+      double factor2 = 1. /( 3. * pow( s2(k), 2./3. ) );  // ERRORS IN THE PAPER? k MIXED WITH p
+      if( s2(k) == 0. )
+        factor2 = 0.;
+
+      result( d + p*d + k ) = factor*( factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - (2./3.)*inv_tran_W( p, k ); 
     }
   }
 
@@ -178,7 +191,7 @@ column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the
 
 
 // [[Rcpp::export]]
-RcppExport SEXP ICA( NumericMatrix XX, NumericVector mm, NumericMatrix WW ) {
+RcppExport SEXP ICA( NumericMatrix XX, NumericVector& mm, NumericMatrix& WW ) {
 
   std::vector< double > _X = as< std::vector<double> >(XX);
   ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
@@ -193,20 +206,37 @@ RcppExport SEXP ICA( NumericMatrix XX, NumericVector mm, NumericMatrix WW ) {
   ICAC::d = W.nr();
   ICAC my_ica( m ,W );
 
-  // TODO: erase this
-  cout << "lnl = " << lnl( my_ica.mW ) << "\n";
+  // TODO: erase these couts
+ /* cout << "lnl = " << lnl( my_ica.mW ) << "\n";
   cout << "der lnl = \n" << derivative(lnl, 1e-5)( my_ica.mW ) << "\n";
   cout << "grad_lnl = \n" << grad_lnl( my_ica.mW ) << "\n";
+  cout << "error = \n" <<  derivative(lnl, 1e-5)( my_ica.mW ) - grad_lnl( my_ica.mW ) << "\n";
+*/
 
-  double result = 0.;
-  // TODO: this has to work
-  /*
+  column_vector test = my_ica.mW;
+
   double result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
       lnl, grad_lnl, my_ica.mW, -1);
 
+  // TODO: erase
   cout << "minimum = " << result << "\n";
-  */
+ /* double result2 = find_min_using_approximate_derivatives(bfgs_search_strategy(),  // Use BFGS search algorithm
+      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
+      lnl, test, -1);
+  cout << "minimum verification = " << result2 << "\n";*/
+
+  matrix<double> mW = reshape( my_ica.mW, ICAC::d+1, ICAC::d );
+
+  for( int i = 0; i < ICAC::d; i++ )
+  {
+    mm( i ) = mW( 0, i );
+
+    for( int j = 0; j < ICAC::d; j++ )
+    {
+      WW(j,i) = mW( j+1, i );
+    }
+  }
 
   return wrap(result);
 }
