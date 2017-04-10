@@ -191,7 +191,7 @@ const column_vector grad_lnl (const column_vector& _mW ) // to be substituted wi
 
 
 // [[Rcpp::export]]
-RcppExport SEXP ICA( NumericMatrix XX, NumericVector& mm, NumericMatrix& WW ) {
+RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW ) {
 
   std::vector< double > _X = as< std::vector<double> >(XX);
   ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
@@ -219,13 +219,11 @@ RcppExport SEXP ICA( NumericMatrix XX, NumericVector& mm, NumericMatrix& WW ) {
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
       lnl, grad_lnl, my_ica.mW, -1);
 
-  // TODO: erase
-  cout << "minimum = " << result << "\n";
  /* double result2 = find_min_using_approximate_derivatives(bfgs_search_strategy(),  // Use BFGS search algorithm
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
       lnl, test, -1);
   cout << "minimum verification = " << result2 << "\n";*/
-
+  
   matrix<double> mW = reshape( my_ica.mW, ICAC::d+1, ICAC::d );
 
   for( int i = 0; i < ICAC::d; i++ )
