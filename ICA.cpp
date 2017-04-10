@@ -157,7 +157,7 @@ const column_vector grad_lnl (const column_vector& _mW ) // to be substituted wi
       if( s2(j) == 0. )
         factor2 = 0.;
 
-      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); // ERROR IN W_jk IN THE PAPER?
+      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); // TODO: redo indices to match the paper 
     }
   }
 
@@ -173,7 +173,7 @@ const column_vector grad_lnl (const column_vector& _mW ) // to be substituted wi
         factor1 = 0.;
 
 
-      double factor2 = 1. /( 3. * pow( s2(k), 2./3. ) );  // ERRORS IN THE PAPER? k MIXED WITH p
+      double factor2 = 1. /( 3. * pow( s2(k), 2./3. ) );  // TODO: redo indices to match the paper 
       if( s2(k) == 0. )
         factor2 = 0.;
 
