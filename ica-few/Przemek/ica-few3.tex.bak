@@ -1,0 +1,1194 @@
+\documentclass[12pt]{article}
+
+\textheight=25.2cm \topmargin=-2.6cm \hoffset=-2.7cm \textwidth=18cm
+\usepackage{amsmath,amsfonts,amssymb,amsthm,dsfont,stmaryrd}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+%\usepackage[cmex10]{amsmath}
+%\usepackage{color}
+
+\def\N{\mathbb{N}}
+\def\Z{\mathbb{Z}}
+\def\R{\mathbb{R}}
+\def\C{\mathcal{C}}
+
+\def\1{\mathds{1}}
+
+\def\e{\varepsilon}
+\def\d{\delta}
+\def\w{\omega}
+\def\v{\mathrm{V}}
+\def\x{\mathrm{x}}
+\def\m{\mathrm{m}}
+\def\z{\mathrm{z}}
+
+\def\F{\mathcal{F}}
+\def\G{\mathcal{G}}
+\def\S{\mathcal{S}}
+\def\A{\mathcal{A}}
+\def\M{\mathcal{M}}
+
+\def\KL{\mathrm{KL}}
+
+\def\for{\mbox{  for }}
+\def\mle{\mathrm{mle}}
+\def\diag{\mathrm{diag}}
+\def\cov{\mathrm{cov}}
+\def\card{\mathrm{card}}
+\def\aff{\mathrm{aff}}
+\def\span{\mathrm{span}}
+\def\nor{\mathcal{N}}
+%\def\w{\omega}
+\DeclareMathOperator*{\argmin}{argmin}
+
+\newtheorem{observation}{Observation}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{problem}{Problem}[section]
+
+%\def\w{\omega}
+%\DeclareMathOperator*{\argmin}{argmin}
+
+\title{ICA for subspaces}
+\author{P. Spurek \and J. Tabor}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{ToDo}
+
+- modele ktore robia PCA?
+
+- modele ktore nie robia PCA? czy wyszukiwanie podprzestrzeni jest istotnym skladnikiem modeu?
+
+WIKIPEDIA:
+{\em 
+Defining component independence.
+
+ICA finds the independent components (also called factors, latent variables or sources) by maximizing the statistical independence of the estimated components. We may choose one of many ways to define a proxy for independence, and this choice governs the form of the ICA algorithm. The two broadest definitions of independence for ICA are
+\begin{itemize}
+\item Minimization of mutual information
+\item Maximization of non-Gaussianity
+\end{itemize}
+
+The Minimization-of-Mutual information (MMI) family of ICA algorithms uses measures like Kullback-Leibler Divergence and maximum entropy. The non-Gaussianity family of ICA algorithms, motivated by the central limit theorem, uses kurtosis and negentropy.
+
+Typical algorithms for ICA use centering (subtract the mean to create a zero mean signal), whitening (usually with the eigenvalue decomposition), and dimensionality reduction as preprocessing steps in order to simplify and reduce the complexity of the problem for the actual iterative algorithm. Whitening and dimension reduction can be achieved with principal component analysis or singular value decomposition. Whitening ensures that all dimensions are treated equally a priori before the algorithm is run. Well-known algorithms for ICA include infomax, FastICA, JADE, and kernel-independent component analysis, among others. In general, ICA cannot identify the actual number of source signals, a uniquely correct ordering of the source signals, nor the proper scaling (including sign) of the source signals.
+
+ICA is important to blind signal separation and has many practical applications. It is closely related to (or even a special case of) the search for a factorial code of the data, i.e., a new vector-valued representation of each data vector such that it gets uniquely encoded by the resulting code vector (loss-free coding), but the code components are statistically independent.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Basic tools}
+
+
+\subsection{Orthogonal projection onto affine subspaces}
+
+Suppose that we have an affine subspace generated over $m \in \R^D,\v \in \R^{D \times d}$, where 
+$\v=[v_1,\ldots,v_k]$ (or more precisely its consecutive columns) is the base of linear part of $P$ with $d$ elements, that is
+$$
+M=m+\span (\v)=m+\{\v r:r \in \R^d\}=\{m+r_1v_1+\ldots+r_dv_d: r_i \in \R\}.
+$$
+We are interested in the coordinates of the point $x \in \R^D$ after the orthogonal
+projection onto $P$ with respect to the base.
+This can restated as the search for coordinates $r=(r_1,\ldots,r_d)^T \in \R^d$
+such that
+$$
+r=\argmin_{s \in \R^d} \|x-(m+\v s)\|^2=\argmin_{s \in \R^d} \|x-(m+s_1v_1+\ldots+s_dv_d)\|^2.
+$$
+The formula can be obtained by the least squares solution to the problem $m+\v r=x$:
+$$
+r_1v_1+\ldots+r_kv_k=x-m,
+$$
+which is given by:
+$$
+r=(\v^T\v)^{-1}\v^T(x-m) \in \R^d.
+$$
+
+
+\subsection{Integration on subspaces}
+
+For the integration over $C^1$ submanifolds of $\R^D$ refer the reader to  \cite{munkres1997analysis, federer2014geometric}. If we are given an a $C^1$ submanifold $M$  of dimension $d$ of $\R^D$, then we have a default restriction of Lebesgue measure to $M$, which we denote by $\lambda_d$ (formally, it is the normalization of $d$-dimensional Haar measure).
+
+In the case we are interested in, when $M$ is an affine subspace, to integrate
+a function over $M$ we can take a point $m \in M$ and base $\v$ of the linear part
+of $M$, and then
+$$
+\int_M f(x) d\lambda_d(x)=\det(\v^T\v)^{1/2} \int_{\R^d} f(m+\v r) d\lambda_d(r).
+$$
+
+With respect to measure $\lambda_d$ in $\R^D$ we can consider the 
+singular densities (that is those defined only on $M$, or equivalently zero 
+except for $M$). In the most important case of Gausian densities, if $m \in \R^D$ and $\Sigma$ is a symmetric nonnegative 
+matrix with rank $d$, then by $N(m,\Sigma)$ we denote the function with support
+in $M=\{m+\Sigma^{1/2}r : r\in \R^D\}$ and the density given by
+$$
+\nor(m,\Sigma)(x)=\frac{1}{\sqrt{\det^{*}(2\pi \Sigma )}} e^{-\frac{1}{2}(x -m)^T{\Sigma }^\dagger (x -m)} \text{ for } x \in M,
+$$
+where $\Sigma^\dagger$ is the generalized Moore-Penrose inverse and $\det^*$ is the pseudo-determinant\footnote{That is the product of all nonzero eigenvalues.}.
+
+\subsection{Push-forward of measures}
+
+Since we know how to integrate functions on affine subspaces, let us discuss the
+natural method of defining (by push-forward) measures on such subspaces,
+for more information see \url{https://en.wikipedia.org/wiki/Pushforward_measure},
+\url{http://www.mat.univie.ac.at/~gerald/ftp/book-fa/index.html} (page 256) and
+\cite{bogachev2007measure}. We assume as before, that 
+$M$ is an affine subspace of $\R^D$ of dimension $d$, and that we fix $m$ (cordinate center) and $\v$ (base of linear part of $M$).
+Assume that we are given an affine function
+$$
+a: \R^d \ni r \to m+\v r \in M \subset \R^D.
+$$
+Then $m$ and $\v$ introduce a coordinate system on $V$, with center at $m$. 
+
+Suppose that we are given a measure $\mu$ on $\R^d$ with density $f$. Then
+we can push-forward (transport) the measure $\mu$ onto $M$ through the map $a$ to obtain the measure by the formula
+$$
+(a_* \mu)(B)=\mu(a^{-1}B) \text{ for } B \subset \R^D.
+$$
+By applying the knowledge of integration over submanifolds, we obtain that 
+the measure $a_* \mu$ with support in $M$ has the singular density with respect to $\lambda_d$ given by
+\begin{equation} \label{eq:dens}
+f_{m,\v}(x)= 
+\begin{cases}
+\frac{1}{\sqrt{\det(\v^T\v)}}
+ f(a_{m,\v}^{-1}x) \text{ if } x \in M, \\
+ 0 \text{ otherwise}.
+ \end{cases}
+\end{equation}
+
+Roughly speaking the above means that if we have a data-set $W \subset \R^d$ which comes from the density $f$ on $\R^d$, then $a_{m,V}(W)$ is clearly supported in $M$ and comes from the singular density $f_{m,\v}$ given by 
+\eqref{eq:dens}.
+
+In the particual case when $W$ comes from the normal density $\nor(m_d,\Sigma_d)$ in $\R^d$, then $a_{m,\v}(W)$ has the singular normal density $\nor(m+\v m_d,\v^T \Sigma_d \v )$ in $\R^D$.
+
+
+\subsection{Measure of nongaussianity}
+
+We consider the similar idea to the Kullback-Leibler.
+
+\subsection{Construction of densities}
+
+We can define the family of singular densities on affine subspaces of 
+dimension $d$, by taking the transport.
+
+
+In this subsection we describe the basic construction of product measures and densities. Given functions $f_1,f_2$ on $\R^{d_1},\R^{d_2}$ by 
+$$
+(f_1 \otimes f_2)(x_1,x_2)=f_1(x_1) \cdot f_2(x_2) \for (x_1,x_2) \in \R^{d_1} 
+\times \R^{d_2}
+$$ 
+we denote the tensor
+product of $f_1$ and $f_2$. Observe that if $f_1,f_2$ are densities, then so is
+$f_1 \otimes f_2$.
+
+If $\F$ is a family of densities on $\R$, then by $\F^{\otimes d}$ ($d$-th tensor power of $\F$) we denote
+the family of densities on $\R^d$ given by
+$$
+\F^{\otimes k}=\{f_1 \otimes \ldots \otimes f_d : f_i \in \F\}.
+$$
+
+
+
+
+\subsection{Our case}
+
+We assume that we have a family $\F$ larger then Gaussians on $\R$.
+
+We have
+$$
+\KL(X,\aff(\S^{\otimes d}),\G^d)=\inf_{m,\v} \KL((v^T\v)^{-1}\v^T(X-m),\S^{\otimes d},\G).
+$$
+Notation: $x[m,\v]$. By the $i$-th coordinate we denote $x[m,\v]_i$.
+
+Thus 
+$$
+\KL(X,\aff(\S^{\otimes d}),\G^d)=\inf_{m,\v} \left( \sum_{i=1}^d \mle(X[m,\v]_i,\S)
+-\mle(X[m,\v],\G)
+\right),
+$$
+where the minus has the direct formula which can be computed.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Main idea}
+
+We want to find an index which would have the following characteristics:
+\begin{enumerate}
+\item the more non-gaussian data the better,
+\item for gaussian data the value zero,
+\item invariant under affine transformations.
+\item ???? $k(f * N) <k(f)$ which implies the minimization?
+\end{enumerate}
+
+\begin{theorem}
+? Theorem: in the perfect split we obain original split ?
+\end{theorem}
+
+\begin{proof}
+We have two random variables which are independent, the second Gaussian.
+Observe that if the change of coordinates, then sum of independent variables.
+
+We search for minimal entropy (maximal likelihood). Since
+[Original Entropy Power Inequality]
+$$
+e^{2H(X+Y)} \geq e^{2H(X)}+e^{2H(Y)},
+$$
+and the equality holds only for the gaussians, 
+\end{proof}
+
+We propose the possible solution for the ICA. We assume that we are given an affine-invariant family
+$\F$ of densities on $\R^D$, which contains normal densities $\G$ (Gaussians). To measure the distance from 
+normality, we define an analogue of Kullback-Leibler divergence [sprawdzic znak, jak entropia to odwrotnie?]:
+$$
+\KL(X,\F,\G)=\mle(X,\F)-\mle(X,\G).
+$$
+
+[czy bierzemy znormalizowane - czy sumaryczne?]
+
+Observe that for a fixed data the second element depends only on the covariance of the data. On the other hand, the first component typically has to be optimized by some gradient methods. Since the formula for the previous part is known
+$$
+\mle(X,\G)=\card X(-\frac{1}{2}\ln |\Sigma_X|-\frac{D}{2}\ln(2\pi e)).
+$$
+
+Now consider the situation where we are given a task of finding dimension on possibly smaller space of dimension $d \leq D$.
+In this case assume that we are given a family $\F^d$ on $\R^d$, where $d \leq D$ (we do not assume that $\F^d$ is affine invariant, as we obtain it directly from the construction by the fact that we can adapt the base).
+To fix an affine space $V$ of dimension $d$ in $\R^D$ we choose its center $m$
+and $d$ linearly independent elements $\v=v_1,\ldots,v_d \in \R^D$.
+
+Now the coordinates\footnote{The formula is the direct consequence of the fact that the orthogonal projection is exactly the solution of least squares solution of the equations 
+$v \alpha=x-m$, where $\alpha=(\alpha_1,\ldots,\alpha_d)^T$} in the base $\v$ of orthogonal projection of $x \in \R^D$ onto $V$ is given by
+\begin{equation} \label{eq:coord}
+\lambda_{m,\v}^x=(\v^T\v)^{-1}\v^T(x-m) \in \R^d \text{ and }
+x_{m,v}=m+\v\lambda_{m,\v}^x.
+\end{equation}
+By $\Lambda_{m,\v}=(\lambda^x_{m,v})$ we denote the coordinates of the whole data set.
+Now we can project the data to this space, and in those coordinates we can measure
+the previously defined Kullback-Leibler generalized divergence:
+\begin{equation} \label{eq:KL}
+(m,\v) \to \KL(\Lambda_{m,\v},\F^d,\G).
+\end{equation}
+The minimization of the above function leads to the solution of the ICA
+problem on the respective subspace.
+
+We will consider it for the family $\F$ of split Gaussians, however, one can apply any family used in the ICA process.
+ 
+	 It occurs that under weak assumption we can even rank the base vectors of $\v$. To do so suppose that $\S^{\otimes d}$ is given as tensor product 
+$\S^{\otimes d}=\S \otimes \cdots \otimes \S$, where $\S$ denotes a family of densities on $\R$
+(this is the case of split Gaussians). 
+In other words we assume that every element of $F \in \S^d$ can be decomposed in the form 
+$$
+F(x_1,\ldots,x_d)=f_1(x_1) \cdot \ldots \cdot f_d(x_d)\text{ where }f_i \in \S.
+$$
+Notation $\aff(S^{\otimes d})$ -- will denote the space of affine. If we are given
+a density $f$ on $\R^d$, and an affine map $A:\R^d \ni \lambda \to m+\v \lambda$, then
+the degenerate density on the space $V$ with respect to the $d$-dimensional Lebesgue (Haar) measure  $\lambda_d$ is given by
+$$
+f_V:V \ni x \to \frac{1}{|A|}f(A^{-1}x)
+$$
+where $|A|$ is the generalization of determinant given by ... 
+The formula for the KL is therefore given by
+$$
+\sum_x \ln f(A^{-1}p_Vx) -\ln N(A^{-1}p_Vx).
+$$
+Observe that $\Sigma \Lambda_V=(A^{-1}p_V)\Sigma(A^{-1}p_V)^T$.
+Consequently, the minus part equals
+$$
+\card X(-\frac{1}{2}\ln |(A^{-1}p_V)\Sigma(A^{-1}p_V)^T|-\frac{d}{2}\ln(2\pi e)).
+$$
+
+PROCEDURE to compute $\KL^d_{m,\v}(X,\S)$:
+\begin{itemize}
+\item data $X$ and family of one-dimensional densities on $\S$ given,
+\item fix $m,\v$,
+\item put $\Lambda=(\lambda_{m,\v}^x)_{x \in X} \subset \R^d$,
+\item by $\Lambda_i$ we denote the set consisting of $i$-th coordinate of $\Lambda$,
+\item compute\footnote{sometimes we need optimization}
+$$
+\KL(\Lambda,\S^d,\G)=\sum_{i=1}^d \mle(\Lambda_i,\S)-\mle(\Lambda,\G).
+$$
+\end{itemize}
+
+We put
+$$
+\KL^d(X,\S)=\inf \KL^d_{m,\v}(X,\S).
+$$
+
+\begin{theorem}
+a) Independent of affine transformations b) czy mozemy sie zawezic do popdrzestrzeni
+\end{theorem}
+
+\begin{problem}
+czy jest znany wzor dla mle przy split gaussian?
+\end{problem}
+
+\begin{theorem}
+
+\end{theorem}
+
+Now suppose that we have found a base $m,\v$ which minimizes \eqref{eq:KL}.
+Denote by $(\alpha)_i$
+$i$-th coordinate of $\alpha$, then we can rank the vectors according to the non-gaussianity of the $i$-th coordinate of the projection:
+$$
+i \to \KL((X_{m,\v})_i,\F^1,\G).
+$$
+ 
+We want to introduce a new measure to see if the subspace we found is correct.
+The model has to be affine independent. To do so, assume that we are given
+data $X=(x_i)$ and the transformed/obtained data $\tilde X=(\tilde x_i)$.
+We define the measure between the best affine transformation between data, to do 
+so by mean squares we solve the problem
+$$
+A\tilde x_i+b=x_i.
+$$
+The mean squarred error is the desired value:
+$$
+i(X,\tilde X)=\frac{1}{N}\sum_{i=1}^N \|x_i-(A\tilde x_i+b)\|^2.
+$$
+ 
+\begin{example}
+Take the real-data $X \subset \R^d$, add the next $D-d$ coordinates by some normal density -- we obtain new data set $\tilde X$. Try to find the first $d$ coordinates. 
+
+Measure the value of
+$$
+i(X,\tilde X).
+$$
+\end{example}
+ 
+\begin{example}
+Take the real-data $X \subset \R^d$, add the next $D-d$ coordinates with zeros.
+Next perturb all coordinates by some normal density. Try to find the first $d$ coordinates. Come back by least squares between the original coordinates and the projection.
+\end{example}
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Przemek}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ The density of the one-dimensional Split Gaussian distribution is given by the formula
+$$
+SN(x;m,\sigma^2,\tau^2) = \left\{ \begin{array}{ll}
+c \cdot \exp[-\frac{1}{2\sigma^2}(x-m)^2], & \textrm{where $x\leq m$}\\
+c \cdot \exp[-\frac{1}{2\tau^2\sigma^2}(x-m)^2], & \textrm{where $x>m$}\\
+\end{array} \right.
+$$
+where $c=\sqrt{\frac{2}{\pi}}\sigma^{-1}(1+\tau)^{-1}$. 
+
+A natural generalization of the univariate split normal distribution to the multivariate settings was presented by \cite{villani2006multivariate}.
+%\comment{(\cite{john1982three})}
+Roughly speaking, authors assume that a vector $\x \in \R^d$ follows the multivariate Split Normal distribution, if its principal components are orthogonal and follow the one-dimensional Split Normal distribution.
+
+\begin{definition}\label{def:SN}
+A density of the multivariate Split Normal distribution is given by
+$$
+ SN_{d}(\x; \m, \sigma,\tau)= \prod_{j=1}^{d} SN(x_j;m_j,\sigma_j^2,\tau_j^2),
+$$
+where  $\m = [m_1, \ldots, m_d]^T$, $\sigma = [\sigma_{1}^2,\ldots,\sigma_{d}^2]^T$ and $\tau=[\tau_{1}^2,\ldots,\tau_{d}^2]^T$.
+%where $W$ is the orthonormal matrix and $\w_{j}$ stand for the $j$-th column of $W$, $\m = (m_1, \ldots, m_d)^T$, $\sigma = (\sigma_{1},\ldots,\sigma_{d})$ and $\tau=(\tau_{1},\ldots,\tau_{d})$.
+\end{definition}
+
+
+In our case we will use density on projection on $d<D$ subspaces. Therefore we need a density $d$-subspace Split Normal distribution.
+
+\begin{definition}\label{def:GSN}
+A density of the multivariate $d$-subspace Split Normal distribution is given by
+$$
+ SN_{d<D}(\x; \m,W, \sigma^2,\tau^2)=  SN_d((W^TW)^{-1}W^T(\x-\m);0,\sigma^2,\tau^2),
+$$
+where
+%%%%%%%%%
+$(W^TW)^{-1}W^T(x-m) \in \R^d$
+%%%%%%%%%
+ $\w_{j} \in \R^D$ is the $j$-th column of non-singular matrix $W = [w_{1},\ldots,w_{d}]$, $\m = [m_1, \ldots, m_D]^T$, $\sigma = [\sigma_{1},\ldots,\sigma_{d}]^T$ and $\tau=[\tau_{1},\ldots,\tau_{d}]^T$.
+\end{definition}
+
+Let us recall that the standard Gaussian density in $\R^d$ is defined by 
+$$
+N(\x;\m,\Sigma)=\frac{1}{(2\pi)^{d/2} \det(\Sigma)^{1/2}} \exp \left(-\tfrac{1}{2} (\x-\m)^T \Sigma^{-1}(\x-\m) \right),
+$$
+where $\m$ denotes the mean, $\Sigma$ is the covariance matrix.
+
+\begin{definition}\label{def:GSN}
+A density of the multivariate $d$-subspace Normal distribution is given by
+$$
+ N_{d<D}(\x; \m, \Sigma, W)= N((W^TW)^{-1}W^T(\x-\m);0,\Sigma),
+$$
+where
+%%%%%%%%%
+$(W^TW)^{-1}W^T(\x-\m) \in \R^d$
+%%%%%%%%%
+ $\w_{j} \in \R^D$ is the $j$-th column of non-singular matrix $W = [w_{1},\ldots,w_{d}]$, $\m = [m_1, \ldots, m_D]^T$, $\Sigma = \diag(\sigma_{1}^2,\ldots,\sigma_{d}^2)$.
+\end{definition}
+
+Our goal is to minimize
+$$
+\KL(X,\F,\G)=\mle(X,\F)-\mle(X,\G) 
+$$
+In our language
+\begin{equation}
+\begin{array}{l}
+\KL_{d<D}(X;\m,W,\sigma,\tau,\Sigma) = \\[6pt]
+= \sum \limits_{\x \in X} \ln(SN_{d<D}(\x;\m,W,\sigma,\tau)) -
+   \sum \limits_{\x \in X} \ln(N_{d<D}(\x;\m,\Sigma,W))
+\end{array}
+\end{equation}
+We known
+$$
+\sum \limits_{\x \in X} \ln(N_{d<D}(\x;\m,\Sigma,W)) = -\frac{d}{2}\ln(2\pi e)-\frac{1}{2}\ln \det(\Sigma_{W}), 
+$$
+where 
+$$
+\Sigma_{W} = \cov( \{ (W^TW)^{-1}W^T(\x-\m) \colon \x \in \R^D\} )
+$$
+
+%%%%%%%%%%%%%%%%%%%
+\subsection{Optimization problem}
+%%%%%%%%%%%%%%%%%%%
+
+The density of the multivariate d-subspace Normal distribution depends on four parameters $\m \in \R^d$, $W \in \M(\R^d)$, $\sigma \in \R^d$, $\tau \in \R^d$. 
+We can find them by minimizing the simpler function, which depends on only  $m \in \R^d$ and $W \in \M(\R^d)$. Other parameters are given by explicit formulas. Let us notice that in this case our minimization problem simplifies to minimizing the function $\mle(X,\F) = \sum \limits_{\x \in X} \ln(SN_{d<D}(\x;\m,W,\sigma,\tau))$
+
+\begin{theorem}\label{the:min}
+Let $\x_1,\ldots,\x_n$ be given.  
+Then the likelihood maximized w.r.t. $\sigma$ and $\tau$ is
+\begin{equation}\label{eq:1}
+%\min_{\sigma, \tau}
+ \hat{L}(X;\m,W) =   \bigg( \frac{2n}{\pi e} \bigg)^{dn/2} \bigg( \prod_{j=1}^{d} g_{j}(\m,W) \bigg)^{-3n/2},
+\end{equation}
+where
+$$
+\begin{array}{c}
+{g}_{j}(\m,W) = {s}_{1j}^{1/3} + {s}_{2j}^{1/3},
+%\\[1ex]
+%W_{\omega}=(W^TW)^{-1}W^T,
+\\[1ex]
+{s}_{1j}= \! \sum\limits_{i \in I_j}[ \w_{j}^T (\x_i-\m)]^2,  {I}_j=\{ i = 1,\ldots,n \colon \w_{j}^T (\x_i-\m) \leq 0 \},
+\\[1ex]
+{s}_{2j}= \! \sum\limits_{i \in I_j^c}[ \w_{j}^T (\x_i-\m)]^2, {I}_j^c=\{ i = 1,\ldots,n \colon  \w_{j}^T (\x_i-\m) > 0 \},
+\end{array}
+$$
+where $\omega_j$ is the $j$-th column of non-singular matrix $(W^TW)^{-1}W^T$ and the maximum likelihood estimators of $\sigma_{j}^2$ and $\tau_{j}$ are
+$$\hat \sigma_j^2(\m,W) = \tfrac{1}{n} s_{1j}^{2/3} g_{j}(\m,W), \quad
+\hat \tau_{j}(\m,W)=\left(\frac{s_{2j}}{s_{1j}}\right)^{1/3}.
+$$
+\end{theorem}
+
+\begin{proof}[Proof of Theorem \ref{the:min}.]
+Let $X=\{ \x_1, \ldots, \x_n \}$ and $W_{\omega}=(W^TW)^{-1}W^T$.
+We write 
+$$
+\z_i=  W_{\omega}(\x_i-m), \quad \z_{ij}= \omega_j^T(\x_i-m),
+$$
+for observation $i$, where $i=1,\ldots,n$ and coordinates $j=1,\ldots,d$.
+
+Let us consider the likelihood function, i.e. 
+$$
+\begin{array}{l}
+L(X;\m,W,\sigma,\tau) = \prod\limits_{i=1}^n SN_{d<D}(\x_i;\m,W,\sigma,\tau) =  
+= \sum \limits_{\x \in X} \ln(SN_{d<D}(\x;\m,W,\sigma,\tau)) 
+\prod\limits_{i=1}^{n} \prod\limits_{j=1}^{d} SN(\omega_j^T(\x_i - \m) ; 0,\sigma^2,\tau^2)
+\\[6pt]
+= c_1^n \big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \big)^{-n} %\cdot \\[6pt]
+\prod\limits_{i=1}^{n} \prod\limits_{j=1}^{d} \exp [ -\frac{1}{2\sigma_j^2}z_{ij}^2 ( 
+\1_{ \{ z_{ij} > 0 \} } ) ],
+\end{array}
+$$
+
+where 
+$
+c_1=\left( \sqrt{\tfrac{2}{\pi}} \right)^{d}.
+$
+Now we take the log-likelihood function, i.e.
+$$
+\begin{array}{l}
+\ln(L(X;\m,W,\sigma,\tau)) \\[6pt]
+=\ln \bigg( c_1^n \Big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \Big)^{-n} \bigg) + %\\[6pt]
+\sum\limits_{i=1}^{n} \sum\limits_{j=1}^{d} \Big[ -\frac{1}{2\sigma_j^2}z_{ij}^2 (\1_{ \{ z_{ij} \leq 0 \} } + \tau_{j}^{-2} \1_{ \{ z_{ij} > 0 \} })\Big]
+\\[6pt]
+= \ln \bigg( c_1^n \Big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \Big)^{-n} \bigg)  -%\\[6pt]
+  \frac{1}{2} \sum\limits_{j=1}^{d} \Big( \sigma_j^{-2} \sum\limits_{i \in I_{j}}    z_{ij}^2   + \frac{\sigma_j^{-2}}{\tau_{j}^{2} }  \sum\limits_{i \in I_{j}^{c}}   z_{ij}^2  \Big) \\[6pt]
+= \ln \bigg( c_1^n \Big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \Big)^{-n} \bigg)  - 
+ \sum\limits_{j=1}^{d} \frac{1}{2\sigma_j^{2}} \Big(  s_{1j}  + \frac{1}{\tau_{j}^{2} }  s_{2j}  \Big).
+\end{array}
+$$
+
+We fix  $\m$, $W$ and maximize the log-likelihood function over $\tau$ and $\sigma$.
+In such a case we have to solve the following system of equations
+$$
+\begin{array}{l}
+\frac{\partial  \ln ( L(X;\m,W,\sigma,\tau) ) }{\partial \sigma_j} = -\frac{n}{\sigma_j} +  \sigma_j^{-3} (s_{1j} + \tau_j^{-2} s_{2j} )
+ =0, \\[6pt] %& \mbox{ for }  & j=1,\ldots,d,
+ \frac{\partial  \ln ( L(X;\m,W,\sigma,\tau) ) }{\partial \tau_j} = - \frac{n}{1+\tau_j} + \frac{s_{2j}}{\tau_j^{3}\sigma_j^{2}} =0 , %& \mbox{ for }  & j=1,\ldots,d.
+\end{array}
+$$
+for  $ j=1,\ldots,d$.
+By simple calculations we obtain the expressions for the estimators
+%\begin{align*}
+$$
+\hat{\sigma}_j^2(\m,W) = 
+\tfrac{1}{n} s_{1j}^{2/3} g_{j}(\m,W), \qquad
+\hat{\tau}_{j}(\m,W) = \bigg( \frac{s_{2j}}{s_{1j}} \bigg)^{1/3}.
+$$
+%\end{align*}
+Substituting it into the log-likelihood function,
+%and taking $e^{\ln \hat{L}(\m,W)}$
+we get
+$$
+\begin{array}{l}
+\hat{L}(\m,W) = \bigg( \frac{2}{\pi} \bigg)^{\frac{dn}{2}} \Big( \prod\limits_{j=1}^{d} \frac{1}{\sqrt{n}} g_j(\m,W)^{\frac{3}{2}} \Big)^{-n}  e^{-\frac{dn}{2}}\\[6pt]
+= \bigg( \frac{2n}{\pi e} \bigg)^{\frac{dn}{2}}  \Big( \prod\limits_{j=1}^{d} g_j(\m,W) \Big)^{-\frac{3n}{2}}. 
+\end{array}
+$$
+\end{proof}
+
+%\begin{theorem}\label{the:Villani}
+%Given a random sample $\x_1,\ldots,\x_n$ from $SN(\mu,\lambda^2,\tau^2)$, the likelihood, maximized over $\lambda$ and $\tau$, is
+%\begin{equation}\label{eq:Villani}
+%%\min_{\sigma, \tau}
+% \hat{L}(\mu) =   \bigg( \frac{2n}{\pi e} \bigg)^{n/2} \bigg( \prod_{j=1}^{d} g_{j}(\m,W) \bigg)^{-3n/2},
+%\end{equation}
+%where
+%$$
+%\begin{array}{c}
+%{g}_{j}(\m,W) = {s}_{1j}^{1/3} + {s}_{2j}^{1/3},
+%\\[1ex]
+%{s}_{1j}= \! \sum\limits_{i \in I_j}[ \w_{j}^T (\x_i-\m)]^2,  {I}_j=\{ i = 1,\ldots,n \colon \w_{j}^T (\x_i-\m) \leq 0 \},
+%\\[1ex]
+%{s}_{2j}= \! \sum\limits_{i \in I_j^c}[ \w_{j}^T (\x_i-\m)]^2, {I}_j^c=\{ i = 1,\ldots,n \colon  \w_{j}^T (\x_i-\m) > 0 \},
+%\end{array}
+%$$
+%and the maximum likelihood estimators of $\sigma_{j}^2$ and $\tau_{j}$ are
+%$$\hat \sigma_j^2(\m,W) = \tfrac{1}{n} s_{1j}^{2/3} g_{j}(\m,W), \quad
+%\hat \tau_{j}(\m,W)=\left(\frac{s_{2j}}{s_{1j}}\right)^{1/3}.
+%$$
+%\end{theorem}
+
+
+Thanks to the above theorem, instead of looking for the maximum of the likelihood function, it is enough to obtain the maximum of the simpler function~(\ref{eq:1}) which depends on two parameters $\m \in \R^d$ and $W \in \M(\R^d)$
+\begin{equation}\label{equ:ll}
+{l}(X;\m,W) = \prod_{j=1}^{d} {g}_{j}(\m,W)
+\end{equation}
+where $\w_{j}$ stands for the $j$-th column of matrix $W$. 
+Consequently, maximization of (\ref{eq:1}) is equivalent to minimization of  (\ref{equ:ll}), see the following corollary.
+
+\begin{corollary}\label{c2}
+Let $X \subset \R^d$, $\m \in \R^d$, $W \in \M(\R^d)$ be given, then
+$$
+ \text{argmax}_{\m,W} \hat{L}(X;\m,W) =  \argmin_{\m,W} {l}(X;\m,W).
+$$
+\end{corollary}
+%\begin{proof}
+%Notice that $l(\m,V,X) = l(\m,W^{-1},X)= {l}(X;\m,W)$ where $W=V^{-1}$ and $$
+%\argmax_{\m,V} \hat L(\m,V,X) = \argmin_{\m,V} l(\m,V,X).
+%$$
+%Moreover
+%$$
+%\min_{\m,V} l(\m,V,X) = \min_{\m,W} {l}(X;\m,W).
+%$$
+%
+%\end{proof} 
+
+
+%%%%%%%%%%%%%%%%%%%
+\subsection{Gradient}
+%%%%%%%%%%%%%%%%%%%
+
+%Minimization of 
+
+%In this subsection we calculate the gradient of the function $\ln({l})$.
+
+One of the possible methods of optimization is the gradient method. Since the minimum of ${l}$ is equal to the minimum of $\ln({l})$, in this subsection we calculate the gradient of $\ln({l})$. 
+Before we prove suitable Theorem \ref{ther:grad}, we recall the following lemma. 
+
+\begin{lemma}\label{jacobi}
+Let $A = (a_{ij})_{1 \leq i,j \leq d}$ be a differentiable map from real numbers to $d \times d$ matrices then
+\begin{equation}
+\frac{\partial \det(A)}{\partial a_{ij}} = \mathrm{adj}^T(A)_{ij},
+\end{equation}
+where $\mathrm{adj}(A)$ stands for the adjugate of $A$, i.e. the transpose of the cofactor matrix.
+\end{lemma}
+\begin{proof}
+By the Laplace expansion $\det A = \sum\limits_{j=1}^{d} (-1)^{i+j} a_{ij} M_{ij}$ where $M_{ij}$ is the minor of the entry in the $i$-th row and $j$-th column. Hence
+$$\frac{\partial \det A}{\partial a_{ij}} = (-1)^{i+j} M_{ij} = \mathrm{adj}^T(A)_{ij}.$$
+\end{proof}
+Now we are ready to calculate gradient of our cost function.
+
+\begin{theorem}\label{ther:grad}
+Let $X \subset \R^d$, $\m = (\m_1, \ldots, \m_d)^T \in \R^d$, $W = (\w_{ij})_{1 \leq i,j \leq d}$ non-singular be given. 
+Then
+$\nabla_{\m}  \ln {l}(X;\m,W) = \left(  \frac{\partial \ln {l}(X;\m,W)}{\partial \m_1}, \ldots, \frac{\partial \ln {l}(X;\m,W)}{\partial \m_d} \right)^T$,
+where
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}(X;\m,W)}{\partial \m_k} =
+\sum \limits_{j=1}^d \frac{-1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \sum \limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} + %\\[6pt]
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \sum \limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m)  \w_{jk}
+\bigg).
+\end{array}
+$$
+Moreover,
+$
+\nabla_{W} \ln {l}(X;\m,W) = \left[ \frac{\partial \ln l(X;\m,W)}{\partial \w_{pk}}  \right]_{1 \leq p,k \leq d},
+$
+where
+$$
+\begin{array}{l}
+\frac{\partial \ln l(X;\m,W)}{\partial \w_{pk}}  = 
+%-\frac{2}{3}  (\w^{-1})^T_{pk} +%\\[6pt] 
+\frac{1}{{s}_{1p}^{\frac{1}{3}} +{s}_{2p}^{\frac{1}{3}}} 
+\bigg(
+\frac{1}{3} {s}_{1p}^{-\frac{2}{3}}  \sum \limits_{i \in {I}_p} 2 \w^T_p  (\x_i - \m) (\x_{ik} - \m_k) +
++ \frac{1}{3} {s}_{2p}^{-\frac{2}{3}}  \sum \limits_{i \in {I}_p^c} 2 \w^T_p  (\x_i - \m) (\x_{ik} - \m_k) \bigg).
+\end{array}
+$$
+and
+$$
+\begin{array}{c}
+%{g}_{j}(\m,W) = {s}_{1j}^{1/3} + {s}_{2j}^{1/3},
+%\\[1ex]
+{s}_{1j}= \! \sum\limits_{i \in I_j}[ \w_{j}^T (\x_i-\m)]^2, {I}_j=\{ i = 1,\ldots,n \colon \w_{j}^T (\x_i-\m) \leq 0 \},
+\\[1ex]
+{s}_{2j}= \! \sum\limits_{i \in I_j^c}[ \w_{j}^T (\x_i-\m)]^2,  {I}_j^c=\{ i = 1,\ldots,n \colon  \w_{j}^T (\x_i-\m) > 0 \}.
+\end{array}
+$$
+\end{theorem}
+
+\begin{proof}[Proof of Theorem \ref{ther:grad}.]
+Let us start with the partial derivative of $\ln({l})$ with respect to $\m$. We have
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}(X;\m,W)}{\partial \m_k} =
+\sum \limits_{j=1}^d \frac{\partial \ln ({g}_j(\m,W))}{\partial \m_k} = \sum\limits_{j=1}^d \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \frac{\partial ({s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}})}{\partial \m_k} %=\\[6pt]
+ \sum \limits_{j=1}^d \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \frac{\partial {s}_{1j}}{\partial \m_k} +
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \frac{\partial {s}_{2j}}{\partial \m_k}
+\bigg).
+\end{array}
+$$
+Now, we need $\frac{\partial {s}_{1j}}{\partial \m_k}$ and $\frac{\partial {s}_{2j}}{\partial \m_k}$, therefore
+$$
+\begin{array}{l}
+\frac{\partial {s}_{1j}}{\partial \m_k} = 
+\sum\limits_{i \in {I}_j} \frac{\partial [\w^T_j (\x_i - \m)]^2}{\partial \m_k} = \sum\limits_{i \in {I}_j} 2 \w^T_j (\x_i - \m) \frac{\partial \w^T_j (\x_i - \m)}{\partial \m_k} = %\\[6pt]
+ \sum\limits_{i \in {I}_j} - 2 \w^T_j (\x_i - \m) \w_{jk}.
+\end{array}
+$$
+Analogously we get
+$$
+\begin{array}{l}
+\frac{\partial {s}_{2j}}{\partial \m_k} = \sum\limits_{i \in {I}_j^c} -2 \w^T_j (\x_i - \m) \w_{jk}.
+\end{array}
+$$
+%\comment{$\v^{-1}_{jk} = \w_{jk}$}\\
+Hence 
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}}{\partial \m_k} =\sum\limits_{j=1}^d \frac{-1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \sum\limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} +% \\[6pt]
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \sum\limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m) \w_{jk}
+\bigg).
+\end{array}
+$$
+
+Now we calculate the partial derivative of $\ln {l}(X;\m,W)$ with respect to the matrix $W$. We have
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}(X;\m,W)}{\partial \w_{pk}} = \sum\limits_{j=1}^d \frac{\partial \ln ({g}_j(\m,W))}{\partial \w_{pk}}.
+\end{array}
+$$
+%%\comment{$\v_{pk}^{-1} = \w_{pk}$}\\
+%To calculate the derivative of the determinant we use Jacobi's formula (see Lemma \ref{jacobi}).
+%Hence% $\frac{\partial \ln (\det(W)^{-\frac{2}{3}})}{\partial \w_{pk}} =$
+%$$
+%\begin{array}{l}
+%\frac{\partial \ln (\det(W)^{-\frac{2}{3}})}{\partial \w_{pk}} = \det(W)^{\frac{2}{3}}  \Big(-\frac{2}{3}\Big)  \det(W)^{-\frac{5}{3}}  \frac{\partial \det(W)}{\partial \w_{pk}} = -\frac{2}{3} \det(W)^{-1}  \mathrm{adj}^T(W)_{pk} \\[6pt]
+% = -\frac{2}{3} \frac{1}{\det(W)}  \left[\det(W)  (W^{-1})^T_{pk}\right]= -\frac{2}{3}  (\w^{-1})^T_{pk},
+%\end{array}
+%$$
+%where $(\w^{-1})^T_{pk}$ is the element in the $p$-th row and $k$-th column of the matrix $(W^{-1})^T$.
+Now we calculate %$\frac{\partial \ln ({g}_j(\m,W))}{\partial \w_{pk}} =$
+$$
+\begin{array}{l}
+\frac{\partial \ln ({g}_j(\m,W))}{\partial \w_{pk}} = \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \frac{\partial ({s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}})}{\partial \w_{pk}}= \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}}  \frac{\partial {s}_{1j}}{\partial \w_{pk}} +
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}}  \frac{\partial {s}_{2j}}{\partial \w_{pk}}
+\bigg),
+\end{array}
+$$
+where
+$$
+\begin{array}{l}
+\frac{\partial {s}_{1j}}{\partial \w_{pk}} = \sum\limits_{ i \in {I}_j} \frac{\partial [\w^T_j (\x_i - \m)]^2}{\partial \w_{pk}} = \sum\limits_{ i \in {I}_j} 2 \w^T_j (\x_i - \m) \frac{\partial \w^T_j (\x_i - \m)}{\partial \w_{pk}}=
+\\[6pt]
+\left\{ \begin{array}{ll}
+0, & \text{if} \; j\neq p\\
+\sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) (\x_{ik} - \m_k), & \text{if} \; j=p\\
+\end{array} \right.
+\end{array}
+$$
+and $\x_{ik}$ is the $k$-th element of the vector $\x_i$. Analogously we get
+$$\frac{\partial {s}_{2j}}{\partial \w_{pk}} = \left\{ \begin{array}{ll}
+0, & \text{if} \; j\neq p\\
+\sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) (\x_{ik} - \m_k), & \text{if} \; j=p.
+\end{array} \right.
+$$
+Hence we obtain %$\frac{\partial \ln {l}}{\partial \w_{pk}} =$
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}}{\partial \w_{pk}} = \frac{1}{{s}_{1p}^{\frac{1}{3}} +{s}_{2p}^{\frac{1}{3}}} 
+ \bigg(
+\frac{1}{3} {s}_{1p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) (\x_{ik} - \m_k)
++ \frac{1}{3} {s}_{2p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) (\x_{ik} - \m_k) \bigg).
+\end{array}
+$$
+\end{proof}
+
+Hence, we get
+
+$$
+\begin{array}{l}
+\frac{\partial \ln {\hat{L}}}{\partial \m_k} = -\frac{3n}{2} \sum\limits_{j=1}^d \frac{-1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \sum\limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} +% \\[6pt]
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \sum\limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m) \w_{jk}
+\bigg).
+\end{array}
+$$
+
+and
+
+$$
+\begin{array}{l}
+\frac{\partial \ln {\hat{L}}}{\partial \w_{pk}} = -\frac{3n}{2} \frac{1}{{s}_{1p}^{\frac{1}{3}} +{s}_{2p}^{\frac{1}{3}}} 
+ \bigg(
+\frac{1}{3} {s}_{1p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) (\x_{ik} - \m_k)
++ \frac{1}{3} {s}_{2p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) (\x_{ik} - \m_k) \bigg).
+\end{array}
+$$
+
+
+Now we can calculate gradients of the function $\sum \limits_{\x \in X} \ln(N_{d<D}(\x;\m,\Sigma,W)) = -\frac{d}{2}\ln(2\pi e)-\frac{1}{2}\ln \det(\Sigma_{W})$.
+
+\begin{lemma}\label{grad:cov}
+Let $X \subset \R^d$, $\m = (\m_1, \ldots, \m_d)^T \in \R^d$, $W = (\w_{ij})_{1 \leq i,j \leq d}$ non-singular be given. Let $C(\m,W) = \ln \det(\Sigma_{W})$ then
+$\nabla_{\m} C(X;\m,W) = \left(  \frac{\partial C(X;\m,W)}{\partial \m_1}, \ldots, \frac{\partial C(X;\m,W)}{\partial \m_d} \right)^T$,
+where
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}(X;\m,W)}{\partial \m_k} =
+\sum \limits_{j=1}^d
+\end{array}
+$$
+Moreover,
+$
+\nabla_{W} C(X;\m,W) = \left[ \frac{\partial C(X;\m,W)}{\partial \w_{pk}}  \right]_{1 \leq p,k \leq d},
+$
+where
+\end{lemma}
+\begin{proof}
+$$C(X;\m,W) = \ln \det(\Sigma_{W}) = $$
+Let us notice that
+$$\Sigma_W = (W^TW)^{-1} W^T \cov(X) \left( (W^TW)^{-1} W^T \right)^T = (W^TW)^{-1} W^T \cov(X) W \left( (W^TW)^{-1} \right)^T$$
+$$= (W^TW)^{-1} \cov(W^TX) ((W^TW)^{-1})^T$$
+Hence
+$$\det(\Sigma_{W}) = \det((W^TW)^{-1}) \det(W^TX) \det(((W^TW)^{-1})^T)$$
+and
+$$\ln \det(\Sigma_{W}) = \ln \det((W^TW)^{-1}) + \ln \det(\cov(W^TX)) + \ln \det(((W^TW)^{-1})^T)$$
+$$= 2\ln \det((W^TW)^{-1}) + \ln \det(W^TX) = 2\ln \frac{1}{\det(W^TW)} + \ln \det(\cov(W^TX))$$
+Moreover,
+$$
+\frac{\partial \cov(W^TX)}{\partial W} = \frac{\partial W^T \cov(X) W}{\partial W} = (\cov(X) + \cov(X)^T) W = 2\cov(X)W
+$$
+and
+$$
+\frac{\partial (W^TW)}{\partial W} = 2W
+$$
+$$
+\frac{\partial C(X;\m,W)}{\partial \w_{pk}} = 2\det(W^TW) \frac{-1}{(\det(W^TW))^2} \mathrm{adj}^T(W^TW)2W + \frac{1}{\det(\cov(W^TX))} \mathrm{adj}^T(\cov(W^TX)) 2\cov(X)W
+$$
+$$
+= \frac{-2}{\det(W^TW)} \mathrm{adj}^T(W^TW)2W + \frac{1}{\det(\cov(W^TX))} \mathrm{adj}^T(\cov(W^TX)) 2\cov(X)W
+$$
+$$
+=-4 (W^TW)^{-1}W + 2(\cov(W^TX))^{-1} \cov(X)W
+$$
+\end{proof}
+
+Summing up,
+$$
+\frac{\partial \frac{1}{2}\ln \det(\Sigma_{W})}{\partial \m_{k}} = 0
+$$
+$$
+\frac{\partial \frac{1}{2}\ln \det(\Sigma_{W})}{\partial \w_{pk}} = -2 (W^TW)^{-1}W + (\cov(W^TX))^{-1} \cov(X)W
+$$
+
+
+\begin{theorem}
+Let $X \subset \R^d$, $\m = (\m_1, \ldots, \m_d)^T \in \R^d$, $W = (\w_{ij})_{1 \leq i,j \leq d}$ non-singular be given. 
+Then
+$\nabla_{\m}  KL(X;\m,W) = \left(  \frac{\partial KL(X;\m,W)}{\partial \m_1}, \ldots, \frac{\partial KL(X;\m,W)}{\partial \m_d} \right)^T$,
+where
+$$
+\begin{array}{l}
+\frac{\partial KL(X;\m,W)}{\partial \m_k} =
+-\frac{3n}{2}\sum \limits_{j=1}^d \frac{-1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \sum \limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} + %\\[6pt]
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \sum \limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m)  \w_{jk}
+\bigg).
+\end{array}
+$$
+Moreover,
+$
+\nabla_{W} KL(X;\m,W) = \left[ \frac{\partial KL(X;\m,W)}{\partial \w_{pk}}  \right]_{1 \leq p,k \leq d},
+$
+where
+$$
+\begin{array}{l}
+\frac{\partial KL(X;\m,W)}{\partial \w_{pk}}  = 
+%-\frac{2}{3}  (\w^{-1})^T_{pk} +%\\[6pt] 
+-\frac{n}{2}\frac{1}{{s}_{1p}^{\frac{1}{3}} +{s}_{2p}^{\frac{1}{3}}} 
+\bigg(
+ {s}_{1p}^{-\frac{2}{3}}  \sum \limits_{i \in {I}_p} 2 \w^T_p  (\x_i - \m) (\x_{ik} - \m_k) +
+ {s}_{2p}^{-\frac{2}{3}}  \sum \limits_{i \in {I}_p^c} 2 \w^T_p  (\x_i - \m) (\x_{ik} - \m_k) \bigg) +\\[6pt]
+%temp -2 (W^TW)^{-1}W 
+%temp + (\cov(W^TX))^{-1} \cov(X)W.
++ (\cov(WX))^{-1} \cov(X)W^T.
+\end{array}
+$$
+and
+$$
+\begin{array}{c}
+%{g}_{j}(\m,W) = {s}_{1j}^{1/3} + {s}_{2j}^{1/3},
+%\\[1ex]
+{s}_{1j}= \! \sum\limits_{i \in I_j}[ \w_{j}^T (\x_i-\m)]^2, {I}_j=\{ i = 1,\ldots,n \colon \w_{j}^T (\x_i-\m) \leq 0 \},
+\\[1ex]
+{s}_{2j}= \! \sum\limits_{i \in I_j^c}[ \w_{j}^T (\x_i-\m)]^2,  {I}_j^c=\{ i = 1,\ldots,n \colon  \w_{j}^T (\x_i-\m) > 0 \}.
+\end{array}
+$$
+\end{theorem}
+
+\section{MODEL II}
+
+\begin{definition}\label{def:GSN}
+A density of the multivariate Split Normal $d$ and Normal $D-d$ distribution is given by
+$$
+ SN_{d}N_{D-d}(\x; \m,W, \sigma^2,\tau^2)=\det(W) \prod_{j=1}^{d} SN(\w_j^T(\x-\m);0,\sigma_j^2,\tau_j^2)\prod_{j=d+1}^{D} N(\w_j^T(\x-\m);0,\sigma_j^2),
+$$
+where $\w_{j}$ is the $j$-th column of non-singular matrix $W$, $\m = (m_1, \ldots, m_d)^T$, $\sigma = (\sigma_{1},\ldots,\sigma_{d})$ and $\tau=(\tau_{1},\ldots,\tau_{D-d})$.
+\end{definition}
+
+The density of the multivariate d-subspace Normal distribution depends on four parameters $\m \in \R^d$, $W \in \M(\R^d)$, $\sigma \in \R^d$, $\tau \in \R^d$. 
+We can find them by minimizing the simpler function, which depends on only  $m \in \R^d$ and $W \in \M(\R^d)$. Other parameters are given by explicit formulas. Let us notice that in this case our minimization problem simplifies to minimizing the function $\mle(X,\F) = \sum \limits_{\x \in X} \ln(SN_{d<D}(\x;\m,W,\sigma,\tau))$
+
+The density of the GSN distribution depends on four parameters $\m \in \R^d$, $W \in \M(\R^d)$, $\sigma \in \R^d$, $\tau \in \R^d$. 
+We can find them by minimizing the simpler function, which depends on only  $m \in \R^d$ and $W \in \M(\R^d)$. Other parameters are given by explicit formulas.    
+
+\begin{theorem}\label{theII:min}
+Let $\x_1,\ldots,\x_n$ be given.  
+Then the likelihood maximized w.r.t. $\sigma$ and $\tau$ is
+\begin{equation}\label{eqII:1}
+%\min_{\sigma, \tau}
+%\bigg( \frac{2n}{\pi e} \bigg)^{dn/2}
+ \hat{L}(X;\m,W) = C \bigg( \frac{1}{|\det(W)|^{\frac{2}{3}}} \prod_{j=1}^{d} g_{j}(\m,W) \prod_{j=d+1}^{D} (s_{1j}+s_{2j})^{\frac{1}{3}} \bigg)^{-3n/2},
+\end{equation}
+where
+$$
+\begin{array}{c}
+{g}_{j}(\m,W) = {s}_{1j}^{1/3} + {s}_{2j}^{1/3},
+\\[1ex]
+{s}_{1j}= \! \sum\limits_{i \in I_j}[ \w_{j}^T (\x_i-\m)]^2,  {I}_j=\{ i = 1,\ldots,n \colon \w_{j}^T (\x_i-\m) \leq 0 \},
+\\[1ex]
+{s}_{2j}= \! \sum\limits_{i \in I_j^c}[ \w_{j}^T (\x_i-\m)]^2, {I}_j^c=\{ i = 1,\ldots,n \colon  \w_{j}^T (\x_i-\m) > 0 \},
+\end{array}
+$$
+and the maximum likelihood estimators of $\sigma_{j}^2$ and $\tau_{j}$ are
+$$\hat \sigma_j^2(\m,W) = \tfrac{1}{n} s_{1j}^{2/3} g_{j}(\m,W), \quad
+\hat \tau_{j}(\m,W)=\left(\frac{s_{2j}}{s_{1j}}\right)^{1/3}.
+$$
+\end{theorem}
+\begin{proof}[Proof of Theorem \ref{theII:min}.]
+Let $X=\{ \x_1, \ldots, \x_n \}$.
+We write 
+$$
+\z_i= W(\x_i-m), \quad \z_{ij}= \w_j^T(\x_i-m),
+$$
+for observation $i$, where $i=1,\ldots,n$ and coordinates $j=1,\ldots,d$.
+
+Let us consider the likelihood function, i.e. 
+$$
+\begin{array}{l}
+L(X;\m,W,\sigma,\tau) = \prod\limits_{i=1}^{n} SN_{d}N_{D-d}(\x_i; \m,W, \sigma^2,\tau^2) \\[6pt] 
+=\prod\limits_{i=1}^{n} | \det(W)|  \prod\limits_{j=1}^{d} SN(  \w_j^T (\x_i - \m) ; 0 , \sigma_j^2, \tau_j^2) \prod\limits_{j=d+1}^{D} N(  \w_j^T (\x_i - \m) ; 0 , \sigma_j^2)\\[6pt]
+=\Big( c_1|\det(W)| \Big)^{n} \Big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \Big)^{-n} %\cdot \\[6pt]
+\prod\limits_{i=1}^{n} \\[6pt]
+\prod\limits_{j=1}^{d} \exp \Big[ -\frac{1}{2\sigma_j^2}z_{ij}^2 (\1_{ \{ z_{ij} \leq 0 \} } + \tau_{j}^{-2} \1_{ \{ z_{ij} > 0 \} }) \Big] \prod\limits_{j=d+1}^{D} \exp \Big[ -\frac{1}{2\sigma_j^2}z_{ij}^2 \Big],
+\end{array}
+$$
+%$$
+%\begin{array}{l}
+%= \prod\limits_{i=1}^{n} GSN_d(\x_i ; \m,V,\sigma,\tau)
+%= \prod\limits_{i=1}^{n} \frac{1}{| \det( V)|}  \prod\limits_{j=1}^{d} SN(  \v^{-1}_j \x_i ; \v^{-1}_j \m , \sigma_j^2, \tau_j^2)=
+%\\[1ex]
+%\left(\frac{c_1}{|\det(V)|}\right)^{n} \left( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \right)^{-n} \left( \prod\limits_{i=1}^{n} \prod\limits_{j=1}^{d} \exp[-\frac{1}{2\sigma_j^2}z_{ij}^2 (\1_{ \{ z_{ij} \leq 0 \} } + \tau_{j}^{-2} \1_{ \{ z_{ij} > 0 \} })]\right)
+%\end{array}
+%$$
+where 
+$
+c_1=\left( \sqrt{\tfrac{2}{\pi}} \right)^{d}.
+$
+Now we take the log-likelihood function, i.e.
+$$
+\begin{array}{l}
+\ln(L(X;\m,W,\sigma,\tau)) \\[6pt]
+=\ln \bigg( \Big( c_1|\det(W)| \Big)^{n} \Big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \Big)^{-n} \bigg) + %\\[6pt]
+ \sum\limits_{i=1}^{n} \sum\limits_{j=1}^{d} \Big[ -\frac{1}{2\sigma_j^2}z_{ij}^2 (\1_{ \{ z_{ij} \leq 0 \} } + \tau_{j}^{-2} \1_{ \{ z_{ij} > 0 \} })\Big] + \sum\limits_{i=1}^{n} \sum\limits_{j=d+1}^{D} \Big[ -\frac{1}{2\sigma_j^2}z_{ij}^2 \Big]  \\[6pt]
+= \ln \bigg( \Big( c_1|\det(W)| \Big)^{n} \Big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \Big)^{-n} \bigg)  -%\\[6pt]
+  \frac{1}{2} \sum\limits_{j=1}^{d} \Big( \sigma_j^{-2} \sum\limits_{i \in I_{j}}    z_{ij}^2   + \frac{\sigma_j^{-2}}{\tau_{j}^{2} }  \sum\limits_{i \in I_{j}^{c}}   z_{ij}^2  \Big) - \frac{1}{2} \sum\limits_{j=d+1}^{D} \sigma_j^{-2} \Big( \sum\limits_{i \in I_{j}}    z_{ij}^2   +  \sum\limits_{i \in I_{j}^{c}}   z_{ij}^2  \Big) \\[6pt]
+= \ln \bigg( \Big( c_1|\det(W)| \Big)^{n} \Big( \prod\limits_{j=1}^{d} \sigma_j(1+\tau_j) \Big)^{-n} \bigg)  - 
+ \sum\limits_{j=1}^{d} \frac{1}{2\sigma_j^{2}} \Big(  s_{1j}  + \frac{1}{\tau_{j}^{2} }  s_{2j}  \Big) - \sum\limits_{j=d+1}^{D} \frac{1}{2\sigma_j^{2}} \Big(  s_{1j}  + s_{2j}  \Big).
+\end{array}
+$$
+
+We fix  $\m$, $W$ and maximize the log-likelihood function over $\tau$ and $\sigma$.
+In such a case we have to solve the following system of equations
+$$
+\begin{array}{l}
+\frac{\partial  \ln ( L(X;\m,W,\sigma,\tau) ) }{\partial \sigma_j} = -\frac{n}{\sigma_j} +  \sigma_j^{-3} (s_{1j} + \tau_j^{-2} s_{2j} ) +  \sigma_j^{-3} (s_{1j} + s_{2j} )
+ =0, \\[6pt] %& \mbox{ for }  & j=1,\ldots,d,
+ \frac{\partial  \ln ( L(X;\m,W,\sigma,\tau) ) }{\partial \tau_j} = - \frac{n}{1+\tau_j} + \frac{s_{2j}}{\tau_j^{3}\sigma_j^{2}} =0 , %& \mbox{ for }  & j=1,\ldots,d.
+\end{array}
+$$
+for  $ j=1,\ldots,d$.
+By simple calculations we obtain the expressions for the estimators
+%\begin{align*}
+$$
+\hat{\sigma}_j^2(\m,W) = 
+\tfrac{1}{n} s_{1j}^{2/3} g_{j}(\m,W), \qquad
+\hat{\tau}_{j}(\m,W) = \bigg( \frac{s_{2j}}{s_{1j}} \bigg)^{1/3}.
+$$
+%\end{align*}
+Substituting it into the log-likelihood function,
+%and taking $e^{\ln \hat{L}(\m,W)}$
+we get
+$$
+\begin{array}{l}
+\hat{L}(\m,W) = \bigg( \frac{2}{\pi} \bigg)^{\frac{dn}{2}}  |\det(W)|^{n} \cdot \Big( \prod\limits_{j=1}^{d} \frac{1}{\sqrt{n}} g_j(\m,W)^{\frac{3}{2}} \Big)^{-n}  e^{-\frac{dn}{2}} \cdot \Big( \prod\limits_{j=d+1}^{D} \frac{1}{\sqrt{n}} (\frac{s_{1j} + s_{2j}}{n})^{\frac{3}{2}} \Big)^{-n}\\[6pt]
+= \bigg( \frac{2n}{\pi e} \bigg)^{\frac{dn}{2}}  \Big( \frac{1}{|\det(W)|^{\frac{2}{3}}} \prod\limits_{j=1}^{d} g_j(\m,W) \prod\limits_{j=d+1}^{D} (s_{1j} + s_{2j})^{\frac{1}{3}} \Big)^{-\frac{3n}{2}}. 
+\end{array}
+$$
+\end{proof}
+
+
+Thanks to the above theorem, instead of looking for the maximum of the likelihood function, it is enough to obtain the maximum of the simpler function~(\ref{eq:1}) which depends on two parameters $\m \in \R^d$ and $W \in \M(\R^d)$
+\begin{equation}\label{equII:ll}
+{l}(X;\m,W) = \frac{1}{|\det(W)|^{\frac{2}{3}}} \prod_{j=1}^{d} {g}_{j}(\m,W) \prod_{j=d+1}^{D} (s_{1j} + s_{2j})^{\frac{1}{3}}
+\end{equation}
+where $\w_{j}$ stands for the $j$-th column of matrix $W$. 
+Consequently, maximization of (\ref{eq:1}) is equivalent to minimization of  (\ref{equ:ll}), see the following corollary.
+
+\begin{corollary}\label{IIc2}
+Let $X \subset \R^d$, $\m \in \R^d$, $W \in \M(\R^d)$ be given, then
+$$
+ \text{argmax}_{\m,W} \hat{L}(X;\m,W) =  \argmin_{\m,W} {l}(X;\m,W).
+$$
+\end{corollary}
+%\begin{proof}
+%Notice that $l(\m,V,X) = l(\m,W^{-1},X)= {l}(X;\m,W)$ where $W=V^{-1}$ and $$
+%\argmax_{\m,V} \hat L(\m,V,X) = \argmin_{\m,V} l(\m,V,X).
+%$$
+%Moreover
+%$$
+%\min_{\m,V} l(\m,V,X) = \min_{\m,W} {l}(X;\m,W).
+%$$
+%
+%\end{proof} 
+
+
+%%%%%%%%%%%%%%%%%%%
+\subsection{Gradient II}
+%%%%%%%%%%%%%%%%%%%
+
+
+\begin{theorem}\label{therII:grad}
+Let $X \subset \R^d$, $\m = (\m_1, \ldots, \m_d)^T \in \R^d$, $W = (\w_{ij})_{1 \leq i,j \leq d}$ non-singular be given. 
+Then
+$\nabla_{\m}  \ln {l}(X;\m,W) = \left(  \frac{\partial \ln {l}(X;\m,W)}{\partial \m_1}, \ldots, \frac{\partial \ln {l}(X;\m,W)}{\partial \m_d} \right)^T$,
+where
+$$
+\begin{array}{l}
+\frac{\partial \ln {l(X;\m,W)}}{\partial \m_k} =\sum\limits_{j=1}^d \frac{-1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \sum\limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} +% \\[6pt]
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \sum\limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m) \w_{jk}
+\bigg)+\\[6pt]
+\sum\limits_{j=d+1}^D \frac{-1}{3(s_{1j}+s_{2j})} \bigg(
+ \sum\limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} +% \\[6pt]
+ \sum\limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m) \w_{jk}
+\bigg)
+.
+\end{array}
+$$
+Moreover,
+$
+\nabla_{W} \ln {l}(X;\m,W) = \left[ \frac{\partial \ln \tilde{l}(X;\m,W)}{\partial \w_{pk}}  \right]_{1 \leq p,k \leq d},
+$
+where
+
+$$
+\begin{array}{l}
+\frac{\partial \ln {l(X;\m,W)}}{\partial \w_{pk}} = -\frac{2}{3} (\w^{-1})^T_{pk} + \frac{1}{{s}_{1p}^{\frac{1}{3}} +{s}_{2p}^{\frac{1}{3}}} 
+ \bigg(
+\frac{1}{3} {s}_{1p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) \w_{pk}(\x_{ik} - \m_k)\\[6pt]
++ \frac{1}{3} {s}_{2p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) \w_{pk}  (\x_{ik} - \m_k) \bigg)+\\[6pt]
+
+\frac{1}{ 3(s_{1j}+s_{2j}) } 
+ \bigg(
+\sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) \w_{pk}(\x_{ik} - \m_k) + \sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) \w_{pk}  (\x_{ik} - \m_k) \bigg)
+.
+\end{array}
+$$
+and
+$$
+\begin{array}{c}
+%{g}_{j}(\m,W) = {s}_{1j}^{1/3} + {s}_{2j}^{1/3},
+%\\[1ex]
+{s}_{1j}= \! \sum\limits_{i \in I_j}[ \w_{j}^T (\x_i-\m)]^2, {I}_j=\{ i = 1,\ldots,n \colon \w_{j}^T (\x_i-\m) \leq 0 \},
+\\[1ex]
+{s}_{2j}= \! \sum\limits_{i \in I_j^c}[ \w_{j}^T (\x_i-\m)]^2,  {I}_j^c=\{ i = 1,\ldots,n \colon  \w_{j}^T (\x_i-\m) > 0 \}.
+\end{array}
+$$
+\end{theorem}
+
+
+\begin{proof}[Proof of Theorem \ref{therII:grad}.]
+Let us start with the partial derivative of $\ln({l})$ with respect to $\m$. We have
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}(X;\m,W)}{\partial \m_k} =
+\sum \limits_{j=1}^d \frac{\partial \ln ({g}_j(\m,W))}{\partial \m_k} + \sum \limits_{j=d+1}^D \frac{\partial \ln ((s_{1j}+s_{2j})^{\frac{1}{3}})}{\partial \m_k} = \sum\limits_{j=1}^d \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \frac{\partial ({s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}})}{\partial \m_k} + \sum\limits_{j=d+1}^D \frac{1}{({s}_{1j} + {s}_{2j})^{\frac{1}{3}}} \frac{\partial (({s}_{1j} + {s}_{2j})^{\frac{1}{3}})}{\partial \m_k} =\\[6pt]
+\sum \limits_{j=1}^d \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \frac{\partial {s}_{1j}}{\partial \m_k} +
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \frac{\partial {s}_{2j}}{\partial \m_k}
+\bigg)
++ \sum \limits_{j=d+1}^D \frac{1}{({s}_{1j} + {s}_{2j})^{\frac{1}{3}}} \frac{1}{3} \frac{1}{({s}_{1j} + {s}_{2j})^{\frac{2}{3}}}\bigg(
+\frac{\partial {s}_{1j}}{\partial \m_k} +
+\frac{\partial {s}_{2j}}{\partial \m_k}
+\bigg).
+\end{array}
+$$
+Now, we need $\frac{\partial {s}_{1j}}{\partial \m_k}$ and $\frac{\partial {s}_{2j}}{\partial \m_k}$, therefore
+$$
+\begin{array}{l}
+\frac{\partial {s}_{1j}}{\partial \m_k} = 
+\sum\limits_{i \in {I}_j} \frac{\partial [\w^T_j (\x_i - \m)]^2}{\partial \m_k} = \sum\limits_{i \in {I}_j} 2 \w^T_j (\x_i - \m) \frac{\partial \w^T_j (\x_i - \m)}{\partial \m_k} = %\\[6pt]
+ \sum\limits_{i \in {I}_j} - 2 \w^T_j (\x_i - \m) \w_{jk}.
+\end{array}
+$$
+Analogously we get
+$$
+\begin{array}{l}
+\frac{\partial {s}_{2j}}{\partial \m_k} = \sum\limits_{i \in {I}_j^c} -2 \w^T_j (\x_i - \m) \w_{jk}.
+\end{array}
+$$
+%\comment{$\v^{-1}_{jk} = \w_{jk}$}\\
+Hence 
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}}{\partial \m_k} =\sum\limits_{j=1}^d \frac{-1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}} \sum\limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} +% \\[6pt]
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}} \sum\limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m) \w_{jk}
+\bigg)+\\[6pt]
+\sum\limits_{j=d+1}^D \frac{-1}{3(s_{1j}+s_{2j})} \bigg(
+ \sum\limits_{i \in I_j} 2 \w_j^T (\x_i - \m)  \w_{jk} +% \\[6pt]
+ \sum\limits_{i \in I_j^c} 2 \w_j^T (\x_i - \m) \w_{jk}
+\bigg)
+.
+\end{array}
+$$
+
+Now we calculate the partial derivative of $\ln {l}(X;\m,W)$ with respect to the matrix $W$. We have
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}(X;\m,W)}{\partial \w_{pk}} = \frac{\partial \ln |\det(W)|^{-\frac{2}{3}}}{\partial \w_{pk}} + \sum\limits_{j=1}^d \frac{\partial \ln ({g}_j(\m,W))}{\partial \w_{pk}} + \sum\limits_{j=d+1}^D \frac{\partial \ln ( (s_{1j}+s_{2j})^{\frac{1}{3}} )}{\partial \w_{pk}}.
+\end{array}
+$$
+%\comment{$\v_{pk}^{-1} = \w_{pk}$}\\
+To calculate the derivative of the determinant we use Jacobi's formula (see Lemma \ref{jacobi}).
+Hence% $\frac{\partial \ln (\det(W)^{-\frac{2}{3}})}{\partial \w_{pk}} =$
+$$
+\begin{array}{l}
+\frac{\partial \ln (\det(W)^{-\frac{2}{3}})}{\partial \w_{pk}} = \det(W)^{\frac{2}{3}}  \Big(-\frac{2}{3}\Big)  \det(W)^{-\frac{5}{3}}  \frac{\partial \det(W)}{\partial \w_{pk}} = -\frac{2}{3} \det(W)^{-1}  \mathrm{adj}^T(W)_{pk} \\[6pt]
+ = -\frac{2}{3} \frac{1}{\det(W)}  \left[\det(W)  (W^{-1})^T_{pk}\right]= -\frac{2}{3}  (\w^{-1})^T_{pk},
+\end{array}
+$$
+where $(\w^{-1})^T_{pk}$ is the element in the $p$-th row and $k$-th column of the matrix $(W^{-1})^T$. Now we calculate %$\frac{\partial \ln ({g}_j(\m,W))}{\partial \w_{pk}} =$
+$$
+\begin{array}{l}
+\frac{\partial \ln ({g}_j(\m,W))}{\partial \w_{pk}} = \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \frac{\partial ({s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}})}{\partial \w_{pk}}= \frac{1}{{s}_{1j}^{\frac{1}{3}} + {s}_{2j}^{\frac{1}{3}}} \bigg(
+\frac{1}{3 {s}_{1j}^{\frac{2}{3}}}  \frac{\partial {s}_{1j}}{\partial \w_{pk}} +
+\frac{1}{3 {s}_{2j}^{\frac{2}{3}}}  \frac{\partial {s}_{2j}}{\partial \w_{pk}}
+\bigg),
+\end{array}
+$$
+where
+$$
+\begin{array}{l}
+\frac{\partial {s}_{1j}}{\partial \w_{pk}} = \sum\limits_{ i \in {I}_j} \frac{\partial [\w^T_j (\x_i - \m)]^2}{\partial \w_{pk}} = \sum\limits_{ i \in {I}_j} 2 \w^T_j (\x_i - \m) \frac{\partial \w^T_j (\x_i - \m)}{\partial \w_{pk}}=
+\\[6pt]
+\left\{ \begin{array}{ll}
+0, & \text{if} \; j\neq p\\
+\sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) \w_{pk}(\x_{ik} - \m_k), & \text{if} \; j=p\\
+\end{array} \right.
+\end{array}
+$$
+and $\x_{ik}$ is the $k$-th element of the vector $\x_i$. Analogously we get
+$$\frac{\partial {s}_{2j}}{\partial \w_{pk}} = \left\{ \begin{array}{ll}
+0, & \text{if} \; j\neq p\\
+\sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) \w_{pk} (\x_{ik} - \m_k), & \text{if} \; j=p.
+\end{array} \right.
+$$
+Moreover,
+$$
+\begin{array}{l}
+\frac{\partial \ln ( (s_{1j}+s_{2j})^{\frac{1}{3}} )}{\partial \w_{pk}} = \frac{1}{ (s_{1j}+s_{2j})^{\frac{1}{3}} } \frac{\partial ( (s_{1j}+s_{2j})^{\frac{1}{3}} )}{\partial \w_{pk}}= \frac{1}{ (s_{1j}+s_{2j})^{\frac{1}{3}} } \frac{1}{3} \frac{1}{ (s_{1j}+s_{2j})^{\frac{2}{3}} } \bigg(
+  \frac{\partial {s}_{1j}}{\partial \w_{pk}} +
+  \frac{\partial {s}_{2j}}{\partial \w_{pk}}
+\bigg),
+\end{array}
+$$
+Hence we obtain %$\frac{\partial \ln {l}}{\partial \w_{pk}} =$
+$$
+\begin{array}{l}
+\frac{\partial \ln {l}}{\partial \w_{pk}} = -\frac{2}{3} (\w^{-1})^T_{pk} + \frac{1}{{s}_{1p}^{\frac{1}{3}} +{s}_{2p}^{\frac{1}{3}}} 
+ \bigg(
+\frac{1}{3} {s}_{1p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) \w_{pk}(\x_{ik} - \m_k)\\[6pt]
++ \frac{1}{3} {s}_{2p}^{-\frac{2}{3}} \sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) \w_{pk}  (\x_{ik} - \m_k) \bigg)+\\[6pt]
+
+\frac{1}{ 3(s_{1j}+s_{2j}) } 
+ \bigg(
+\sum\limits_{ i \in {I}_p} 2 \w^T_p (\x_i - \m) \w_{pk}(\x_{ik} - \m_k) + \sum\limits_{ i \in {I}_p^c} 2 \w^T_p (\x_i - \m) \w_{pk}  (\x_{ik} - \m_k) \bigg)
+.
+\end{array}
+$$
+
+\end{proof}
+
+\bibliographystyle{plain}
+\bibliography{ref}
+
+\end{document}

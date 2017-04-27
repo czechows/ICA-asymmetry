@@ -1,0 +1,125 @@
+\documentclass[12pt]{article}
+
+\textheight=25.2cm \topmargin=-2.6cm \hoffset=-2.7cm \textwidth=18cm
+\usepackage{amsmath,amsfonts,amssymb,amsthm,dsfont}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfigure} 
+\usepackage{epstopdf}
+
+% For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\def\N{\mathbb{N}}
+\def\Z{\mathbb{Z}}
+\def\R{\mathbb{R}}
+\def\C{\mathcal{C}}
+
+\def\F{\mathcal{F}}
+\def\G{\mathcal{G}}
+\def\A{\mathcal{A}}
+\def\M{\mathcal{M}}
+\def\ICA{ICA$_{\mathcal{S\!N}}$}
+\def\SN{\mbox{$\mathcal{S\!N}$}}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
+\def\x{\mathrm{x}}
+\def\z{\mathrm{z}}
+\def\m{\mathrm{m}}
+\def\e{\varepsilon}
+\def\d{\delta}
+\def\w{\omega}
+\def\v{\mathrm{V}}
+\def\m{\mathrm{m}}
+
+\def\F{\mathcal{F}}
+\def\G{\mathcal{G}}
+\def\S{\mathcal{S}}
+\def\A{\mathcal{A}}
+
+\def\KL{\mathrm{KL}}
+
+\def\for{\mbox{  for }}
+\def\mle{\mathrm{mle}}
+\def\diag{\mathrm{diag}}
+\def\cov{\mathrm{cov}}
+\def\card{\mathrm{card}}
+\def\aff{\mathrm{aff}}
+\def\span{\mathrm{span}}
+\def\nor{\mathcal{N}}
+
+\def\ICA{ICA$_{\mathcal{S\!N}}$}
+\def\1{\mathds{1}}
+\def\X{\mathbf{X}}
+\def\S{\mathbf{S}}
+
+\newtheorem{observation}{Observation}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{problem}{Problem}[section]
+
+\def\w{\omega}
+
+\title{ICA for subspaces}
+\author{P. Spurek \and J. Tabor  \and P. Rola}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract} 
+In its basic form Independent Component Analysis (ICA) aims to find an invertible linear transformation of the data so that the resulting data has independent components. In the case when number of sources is less than the number of sensors, the task has an additional step which consists of filtering our the possible noise components. In such situation we are looking for so-called non-square mixing matrix.
+
+Due to computational constraints, principal component analysis is often used for dimension reduction prior to ICA (PCA+ICA). However, such approach often removes important information.
+In this paper we present a density based method \ICA{} based 
+on split-gaussians which is dedicated for determining \textbf{a? the?} non-square mixing matrix in ICA maximum likelihood framework.
+\end{abstract} 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{introduction.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{related_works.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{section_3.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{experiments.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Appendix A}
+\label{a1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{appendix_a.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{appendix_b.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\bibliography{ref}
+\bibliographystyle{plain}
+
+\end{document}

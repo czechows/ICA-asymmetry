@@ -1,0 +1,261 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% ICML 2016 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Use the following line _only_ if you're still using LaTeX 2.09.
+%\documentstyle[icml2016,epsf,natbib]{article}
+% If you rely on Latex2e packages, like most moden people use this:
+\documentclass{article}
+
+%\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsfonts,amssymb,amsthm,dsfont}
+% use Times
+\usepackage{times}
+% For figures
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfigure} 
+
+% For citations
+%\usepackage{natbib}
+
+% For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\usepackage{epstopdf}
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2016} with
+% \usepackage[nohyperref]{icml2016} above.
+\usepackage{hyperref}
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage{icml2017} 
+
+\icmltitlerunning{Density based ICA for non-square mixing matrix}
+
+% Employ the following version of the ``usepackage'' statement for
+% submitting the draft version of the paper for review.  This will set
+% the note in the first column to ``Under review.  Do not distribute.''
+%\usepackage{icml2016} 
+
+\usepackage{MnSymbol}
+%\usepackage{stmaryrd}
+\newcommand\de[1]{\lsem #1 \rsem}
+
+\def\N{\mathbb{N}}
+\def\Z{\mathbb{Z}}
+\def\R{\mathbb{R}}
+\def\C{\mathcal{C}}
+
+\def\e{\varepsilon}
+\def\d{\delta}
+%\def\w{\omega}
+\def\w{\mathrm{w}}
+\def\V{\mathrm{V}}
+\def\v{\mathrm{v}}
+\def\x{\mathrm{x}}
+\def\m{\mathrm{m}}
+\def\z{\mathrm{z}}
+\def\s{s}%{{s\I}}
+
+\def\F{\mathcal{F}}
+\def\G{\mathcal{G}}
+\def\A{\mathcal{A}}
+\def\M{\mathcal{M}}
+\def\SN{\mathcal{SN}}
+
+\def\1{\mathds{1}}
+\def\X{\mathbf{X}}
+\def\S{\mathbf{S}}
+
+\def\KL{\mathrm{KL}}
+
+\def\for{\mbox{  for }}
+\def\mle{\mathrm{mle}}
+\def\diag{\mathrm{diag}}
+\def\cov{\mathrm{Cov}}
+\def\mean{\mathrm{mean}}
+\def\card{\mathrm{card}}
+\def\aff{\mathrm{aff}}
+\def\span{\mathrm{span}}
+\def\nor{\mathcal{N}}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\def\ICA{ICA$_{\mathcal{S\!N}}$}
+\def\SN{\mbox{$\mathcal{S\!N}$}}
+
+
+\newtheorem{observation}{Observation}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{problem}{Problem}[section]
+
+
+% Employ this version of the ``usepackage'' statement after the paper has
+% been accepted, when creating the final version.  This will set the
+% note in the first column to ``Proceedings of the...''
+%\usepackage[accepted]{icml2016}
+
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+%\icmltitlerunning{ICA - few}
+
+\newcommand\jacek[1]{{\color{red}\sc #1}}
+
+\begin{document} 
+
+\twocolumn[
+\icmltitle{Density based ICA for non-square mixing matrix}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2017
+% package.
+
+% list of affiliations. the first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% you can specify symbols, otherwise they are numbered in order
+% ideally, you should not use this facility. affiliations will be numbered
+% in order of appearance and this is the preferred way.
+%\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Przemyslaw Spurek}{goo}
+\icmlauthor{Jacek Tabor}{goo}
+\icmlauthor{Przemys\l{}aw Rola}{goo}
+\end{icmlauthorlist}
+
+\icmlaffiliation{goo}{Jagiellonian University, Krak\'ow, Poland}
+
+\icmlcorrespondingauthor{Przemyslaw Spurek}{przemyslaw.spurek@uj.edu.pl}
+
+% You may provide any keywords that you 
+% find helpful for describing your paper; these are used to populate 
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{boring formatting information, machine learning, ICML}
+
+\vskip 0.3in
+]
+
+\begin{abstract} 
+In its basic form Independent Component Analysis (ICA) aims to find an invertible linear transformation of the data so that the resulting data has independent components. In the case when number of sources is less than the number of sensors, the task has an additional step which consists of filtering our the possible noise components. In such situation we are looking for so-called non-square mixing matrix.
+
+Due to computational constraints, principal component analysis is often used for dimension reduction prior to ICA (PCA+ICA). However, such approach often removes important information.
+In this paper we present a density based method \ICA{} based 
+on split-gaussians which is dedicated for determining non-square mixing matrix in ICA maximum likelihood framework.
+\end{abstract} 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{introduction.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{related_works.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{section_3.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{experiments.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Appendix A}
+\label{a1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{appendix_a.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{appendix_b.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Acknowledgements should only appear in the accepted version. 
+%\section*{Acknowledgements} 
+% 
+%\textbf{Do not} include acknowledgements in the initial version of
+%the paper submitted for blind review.
+%
+%If a paper is accepted, the final camera-ready version can (and
+%probably should) include acknowledgements. In this case, please
+%place such acknowledgements in an unnumbered section at the
+%end of the paper. Typically, this will include thanks to reviewers
+%who gave useful comments, to colleagues who contributed to the ideas, 
+%and to funding agencies and corporate sponsors that provided financial 
+%support.  
+
+
+% In the unusual situation where you want a paper to appear in the
+% references without citing it in the main text, use \nocite
+
+%\bibliographystyle{icml2017}
+\bibliography{ref}
+\bibliographystyle{icml2017}
+
+\end{document} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+@article{wang2015abundance,
+  title={An abundance characteristic-based independent component analysis for hyperspectral unmixing},
+  author={Wang, Nan and Du, Bo and Zhang, Liangpei and Zhang, Lifu},
+  journal={IEEE Transactions on Geoscience and Remote Sensing},
+  volume={53},
+  number={1},
+  pages={416--428},
+  year={2015},
+  publisher={IEEE}
+}
+
+
+@article{caiafa2008blind,
+  title={Blind spectral unmixing by local maximization of non-Gaussianity},
+  author={Caiafa, Cesar F and Salerno, Emanuele and Proto, Araceli N and Fiumi, L},
+  journal={Signal Processing},
+  volume={88},
+  number={1},
+  pages={50--68},
+  year={2008},
+  publisher={Elsevier}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was
+% created by Lise Getoor and Tobias Scheffer, it was slightly modified  
+% from the 2010 version by Thorsten Joachims & Johannes Fuernkranz, 
+% slightly modified from the 2009 version by Kiri Wagstaff and 
+% Sam Roweis's 2008 version, which is slightly modified from 
+% Prasad Tadepalli's 2007 version which is a lightly 
+% changed version of the previous year's version by Andrew Moore, 
+% which was in turn edited from those of Kristian Kersting and 
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.  

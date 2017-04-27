@@ -1,0 +1,243 @@
+\begin{thebibliography}{35}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Allassonniere \& Younes(2012)Allassonniere and
+  Younes]{allassonniere2012stochastic}
+Allassonniere, St{\'e}phanie and Younes, Laurent.
+\newblock A stochastic algorithm for probabilistic independent component
+  analysis.
+\newblock \emph{The Annals of Applied Statistics}, pp.\  125--160, 2012.
+
+\bibitem[Attias \& Schreiner(1997)Attias and Schreiner]{attias1997blind}
+Attias, H and Schreiner, CE.
+\newblock Blind source separation and deconvolution by dynamic component
+  analysis.
+\newblock In \emph{Neural Networks for Signal Processing [1997] VII.
+  Proceedings of the 1997 IEEE Workshop}, pp.\  456--465. IEEE, 1997.
+
+\bibitem[Beckmann(2012)]{beckmann2012modelling}
+Beckmann, Christian~F.
+\newblock Modelling with independent components.
+\newblock \emph{Neuroimage}, 62\penalty0 (2):\penalty0 891--901, 2012.
+
+\bibitem[Beckmann \& Smith(2004)Beckmann and Smith]{beckmann2004probabilistic}
+Beckmann, Christian~F and Smith, Stephen~M.
+\newblock Probabilistic independent component analysis for functional magnetic
+  resonance imaging.
+\newblock \emph{IEEE transactions on medical imaging}, 23\penalty0
+  (2):\penalty0 137--152, 2004.
+
+\bibitem[Bell \& Sejnowski(1995)Bell and Sejnowski]{bell1995information}
+Bell, Anthony~J and Sejnowski, Terrence~J.
+\newblock An information-maximization approach to blind separation and blind
+  deconvolution.
+\newblock \emph{Neural computation}, 7\penalty0 (6):\penalty0 1129--1159, 1995.
+
+\bibitem[Belouchrani et~al.(1995)Belouchrani, Cardoso,
+  et~al.]{belouchrani1995maximum}
+Belouchrani, Adel, Cardoso, Jean-Fran{\c{c}}ois, et~al.
+\newblock Maximum likelihood source separation by the expectation-maximization
+  technique: Deterministic and stochastic implementation.
+\newblock In \emph{Proc. Nolta}, volume~95, pp.\  49--53. Citeseer, 1995.
+
+\bibitem[Blanchard et~al.(2006)Blanchard, Kawanabe, Sugiyama, Spokoiny, and
+  Mazller]{blanchard2006search}
+Blanchard, Gilles, Kawanabe, Motoaki, Sugiyama, Masashi, Spokoiny, Vladimir,
+  and Mazller, Klaus-Robert.
+\newblock In search of non-gaussian components of a high-dimensional
+  distribution.
+\newblock \emph{Journal of Machine Learning Research}, 7\penalty0
+  (Feb):\penalty0 247--282, 2006.
+
+\bibitem[Caiafa et~al.(2008)Caiafa, Salerno, Proto, and Fiumi]{caiafa2008blind}
+Caiafa, Cesar~F, Salerno, Emanuele, Proto, Araceli~N, and Fiumi, L.
+\newblock Blind spectral unmixing by local maximization of non-gaussianity.
+\newblock \emph{Signal Processing}, 88\penalty0 (1):\penalty0 50--68, 2008.
+
+\bibitem[Cover \& Thomas(2012)Cover and Thomas]{cover2012elements}
+Cover, Thomas~M and Thomas, Joy~A.
+\newblock \emph{Elements of information theory}.
+\newblock John Wiley and Sons, 2012.
+
+\bibitem[Green et~al.(2002)Green, Nandy, and Cordes]{green2002pca}
+Green, Christopher~G, Nandy, Rajesh~R, and Cordes, Dietmar.
+\newblock Pca-preprocessing of fmri data adversely affects the results of ica.
+\newblock In \emph{Proceedings of international society of magnetic resonance
+  in medicine}, volume~10, 2002.
+
+\bibitem[Hastie \& Tibshirani(2010)Hastie and Tibshirani]{prodenica}
+Hastie, Trevor and Tibshirani, Rob.
+\newblock \emph{ProDenICA: Product Density Estimation for ICA using tilted
+  Gaussian density estimates}, 2010.
+\newblock URL \url{http://CRAN.R-project.org/package=ProDenICA}.
+\newblock R package version 1.0.
+
+\bibitem[Helwig(2015)]{ica}
+Helwig, Nathaniel~E.
+\newblock \emph{ica: Independent Component Analysis}, 2015.
+\newblock URL \url{http://CRAN.R-project.org/package=ica}.
+\newblock R package version 1.0-1.
+
+\bibitem[Helwig \& Hong(2013)Helwig and Hong]{helwig2013critique}
+Helwig, Nathaniel~E and Hong, Sungjin.
+\newblock A critique of tensor probabilistic independent component analysis:
+  implications and recommendations for multi-subject fmri data analysis.
+\newblock \emph{Journal of neuroscience methods}, 213\penalty0 (2):\penalty0
+  263--273, 2013.
+
+\bibitem[Hyv{\"a}rinen(1999)]{hyvarinen1999fast}
+Hyv{\"a}rinen, Aapo.
+\newblock Fast and robust fixed-point algorithms for independent component
+  analysis.
+\newblock \emph{Neural Networks, IEEE Transactions on}, 10\penalty0
+  (3):\penalty0 626--634, 1999.
+
+\bibitem[Hyv{\"a}rinen \& Oja(2000)Hyv{\"a}rinen and
+  Oja]{hyvarinen2000independent}
+Hyv{\"a}rinen, Aapo and Oja, Erkki.
+\newblock Independent component analysis: algorithms and applications.
+\newblock \emph{Neural networks}, 13\penalty0 (4):\penalty0 411--430, 2000.
+
+\bibitem[Hyv{\"a}rinen et~al.(2004)Hyv{\"a}rinen, Karhunen, and
+  Oja]{hyvarinen2004independent}
+Hyv{\"a}rinen, Aapo, Karhunen, Juha, and Oja, Erkki.
+\newblock \emph{Independent component analysis}, volume~46.
+\newblock John Wiley \& Sons, 2004.
+
+\bibitem[John(1982)]{john1982three}
+John, Sleeba.
+\newblock The three-parameter two-piece normal family of distributions and its
+  fitting.
+\newblock \emph{Communications in Statistics-Theory and Methods}, 11\penalty0
+  (8):\penalty0 879--885, 1982.
+
+\bibitem[Karvanen(2008)]{pearsonica}
+Karvanen, J.
+\newblock \emph{PearsonICA}, 2008.
+\newblock URL \url{https://CRAN.R-project.org/package=PearsonICA}.
+\newblock R package version 1.2-3.
+
+\bibitem[Kawanabe et~al.(2007)Kawanabe, Sugiyama, Blanchard, and
+  M{\"u}ller]{kawanabe2007new}
+Kawanabe, Motoaki, Sugiyama, Masashi, Blanchard, Gilles, and M{\"u}ller,
+  Klaus-Robert.
+\newblock A new algorithm of non-gaussian component analysis with radial kernel
+  functions.
+\newblock \emph{Annals of the Institute of Statistical Mathematics},
+  59\penalty0 (1):\penalty0 57--75, 2007.
+
+\bibitem[Lorenzo-Seva \& Ten~Berge(2006)Lorenzo-Seva and
+  Ten~Berge]{lorenzo2006tucker}
+Lorenzo-Seva, Urbano and Ten~Berge, Jos~MF.
+\newblock Tucker's congruence coefficient as a meaningful index of factor
+  similarity.
+\newblock \emph{Methodology}, 2\penalty0 (2):\penalty0 57--64, 2006.
+
+\bibitem[Matilainen et~al.(2016)Matilainen, Miettinen, Nordhausen, Oja, and
+  Taskinen]{tsBSS}
+Matilainen, Markus, Miettinen, Jari, Nordhausen, Klaus, Oja, Hannu, and
+  Taskinen, Sara.
+\newblock \emph{tsBSS: Tools for Blind Source Separation for Time Series},
+  2016.
+\newblock URL \url{http://CRAN.R-project.org/package=tsBSS}.
+\newblock R package version 0.2.
+
+\bibitem[Miettinen et~al.(2014)Miettinen, Nordhausen, Oja, and
+  Taskinen]{miettinen2014deflation}
+Miettinen, Jari, Nordhausen, Klaus, Oja, Hannu, and Taskinen, Sara.
+\newblock Deflation-based fastica with adaptive choices of nonlinearities.
+\newblock \emph{IEEE Transactions on Signal Processing}, 62\penalty0
+  (21):\penalty0 5716--5724, 2014.
+
+\bibitem[Moulines et~al.(1997)Moulines, Cardoso, and
+  Gassiat]{moulines1997maximum}
+Moulines, Eric, Cardoso, J-F, and Gassiat, Elisabeth.
+\newblock Maximum likelihood for blind separation and deconvolution of noisy
+  signals using mixture models.
+\newblock In \emph{Acoustics, Speech, and Signal Processing, 1997. ICASSP-97.,
+  1997 IEEE International Conference on}, volume~5, pp.\  3617--3620. IEEE,
+  1997.
+
+\bibitem[Pham \& Garat(1997)Pham and Garat]{pham1997blind}
+Pham, Dinh~Tuan and Garat, Philippe.
+\newblock Blind separation of mixture of independent sources through a
+  quasi-maximum likelihood approach.
+\newblock \emph{Signal Processing, IEEE Transactions on}, 45\penalty0
+  (7):\penalty0 1712--1725, 1997.
+
+\bibitem[Risk et~al.(2015)Risk, Matteson, and Ruppert]{risk2015likelihood}
+Risk, Benjamin~B, Matteson, David~S, and Ruppert, David.
+\newblock Likelihood component analysis.
+\newblock \emph{arXiv preprint arXiv:1511.01609}, 2015.
+
+\bibitem[Samarov et~al.(2004)Samarov, Tsybakov,
+  et~al.]{samarov2004nonparametric}
+Samarov, Alexander, Tsybakov, Alexandre, et~al.
+\newblock Nonparametric independent component analysis.
+\newblock \emph{Bernoulli}, 10\penalty0 (4):\penalty0 565--582, 2004.
+
+\bibitem[Samworth et~al.(2012)Samworth, Yuan, et~al.]{samworth2012independent}
+Samworth, Richard~J, Yuan, Ming, et~al.
+\newblock Independent component analysis via nonparametric maximum likelihood
+  estimation.
+\newblock \emph{The Annals of Statistics}, 40\penalty0 (6):\penalty0
+  2973--3002, 2012.
+
+\bibitem[Shi et~al.(2017)Shi, Guo, et~al.]{shi2017investigating}
+Shi, Ran, Guo, Ying, et~al.
+\newblock Investigating differences in brain functional networks using
+  hierarchical covariate-adjusted independent component analysis.
+\newblock \emph{The Annals of Applied Statistics}, 10\penalty0 (4):\penalty0
+  1930--1957, 2017.
+
+\bibitem[Spurek et~al.(2017)]{ICA2017pattern}
+Spurek, P. et~al.
+\newblock Ica based on the data asymmetry.
+\newblock \emph{Pattern Recognition (accepted)}, 2017.
+
+\bibitem[Tipping \& Bishop(1999)Tipping and Bishop]{tipping1999probabilistic}
+Tipping, Michael~E and Bishop, Christopher~M.
+\newblock Probabilistic principal component analysis.
+\newblock \emph{Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)}, 61\penalty0 (3):\penalty0 611--622, 1999.
+
+\bibitem[Villani \& Larsson(2006)Villani and Larsson]{villani2006multivariate}
+Villani, Mattias and Larsson, Rolf.
+\newblock The multivariate split normal distribution and asymmetric principal
+  components analysis.
+\newblock \emph{Communications in Statistics—Theory and Methods}, 35\penalty0
+  (6):\penalty0 1123--1140, 2006.
+
+\bibitem[Wang et~al.(2015)Wang, Du, Zhang, and Zhang]{wang2015abundance}
+Wang, Nan, Du, Bo, Zhang, Liangpei, and Zhang, Lifu.
+\newblock An abundance characteristic-based independent component analysis for
+  hyperspectral unmixing.
+\newblock \emph{IEEE Transactions on Geoscience and Remote Sensing},
+  53\penalty0 (1):\penalty0 416--428, 2015.
+
+\bibitem[Zhu et~al.(2014{\natexlab{a}})Zhu, Wang, andBin Fan, and
+  Pan]{fyzhu2014IJPRSSSNMF}
+Zhu, Feiyun, Wang, Ying, andBin Fan, Shiming~Xiang, and Pan, Chunhong.
+\newblock Structured sparse method for hyperspectral unmixing.
+\newblock \emph{ISPRS Journal of Photogrammetry and Remote Sensing},
+  88:\penalty0 101--118, 2014{\natexlab{a}}.
+
+\bibitem[Zhu et~al.(2014{\natexlab{b}})Zhu, Wang, Fan, Meng, and
+  Pan]{fyzhu2014JSTSPRRLbSF}
+Zhu, Feiyun, Wang, Ying, Fan, Bin, Meng, Gaofeng, and Pan, Chunhong.
+\newblock Effective spectral unmixing via robust representation and
+  learning-based sparsity.
+\newblock \emph{CoRR}, abs/1409.0685, 2014{\natexlab{b}}.
+
+\bibitem[Zhu et~al.(2014{\natexlab{c}})Zhu, Wang, Fan, Meng, Xiang, and
+  Pan]{fyzhu2014TIPDgSNMF}
+Zhu, Feiyun, Wang, Ying, Fan, Bin, Meng, Gaofeng, Xiang, Shiming, and Pan,
+  Chunhong.
+\newblock Spectral unmixing via data-guided sparsity.
+\newblock \emph{CoRR}, abs/1403.3155, 2014{\natexlab{c}}.
+
+\end{thebibliography}

@@ -1,0 +1,103 @@
+\begin{thebibliography}{16}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Beckmann(2012)]{beckmann2012modelling}
+Beckmann, Christian~F.
+\newblock Modelling with independent components.
+\newblock \emph{Neuroimage}, 62\penalty0 (2):\penalty0 891--901, 2012.
+
+\bibitem[Bogachev(2007)]{bogachev2007measure}
+Bogachev, Vladimir~I.
+\newblock \emph{Measure theory}, volume~1.
+\newblock Springer Science \& Business Media, 2007.
+
+\bibitem[Caiafa et~al.(2008)Caiafa, Salerno, Proto, and Fiumi]{caiafa2008blind}
+Caiafa, Cesar~F, Salerno, Emanuele, Proto, Araceli~N, and Fiumi, L.
+\newblock Blind spectral unmixing by local maximization of non-gaussianity.
+\newblock \emph{Signal Processing}, 88\penalty0 (1):\penalty0 50--68, 2008.
+
+\bibitem[Cardoso \& Souloumiac(1993)Cardoso and Souloumiac]{cardoso1993blind}
+Cardoso, Jean-Fran{\c{c}}ois and Souloumiac, Antoine.
+\newblock Blind beamforming for non-gaussian signals.
+\newblock In \emph{IEE Proceedings F (Radar and Signal Processing)}, volume
+  140, pp.\  362--370. IET, 1993.
+
+\bibitem[Chen et~al.(2006)Chen, Bickel, et~al.]{chen2006efficient}
+Chen, Aiyou, Bickel, Peter~J, et~al.
+\newblock Efficient independent component analysis.
+\newblock \emph{The Annals of Statistics}, 34\penalty0 (6):\penalty0
+  2825--2855, 2006.
+
+\bibitem[Federer(2014)]{federer2014geometric}
+Federer, Herbert.
+\newblock \emph{Geometric measure theory}.
+\newblock Springer, 2014.
+
+\bibitem[Green et~al.(2002)Green, Nandy, and Cordes]{green2002pca}
+Green, Christopher~G, Nandy, Rajesh~R, and Cordes, Dietmar.
+\newblock Pca-preprocessing of fmri data adversely affects the results of ica.
+\newblock In \emph{Proceedings of international society of magnetic resonance
+  in medicine}, volume~10, 2002.
+
+\bibitem[Hyv{\"a}rinen \& Oja(2000)Hyv{\"a}rinen and
+  Oja]{hyvarinen2000independent}
+Hyv{\"a}rinen, Aapo and Oja, Erkki.
+\newblock Independent component analysis: algorithms and applications.
+\newblock \emph{Neural networks}, 13\penalty0 (4):\penalty0 411--430, 2000.
+
+\bibitem[Hyv{\"a}rinen et~al.(2004)Hyv{\"a}rinen, Karhunen, and
+  Oja]{hyvarinen2004independent}
+Hyv{\"a}rinen, Aapo, Karhunen, Juha, and Oja, Erkki.
+\newblock \emph{Independent component analysis}, volume~46.
+\newblock John Wiley \& Sons, 2004.
+
+\bibitem[Langley(2000)]{langley00}
+Langley, P.
+\newblock Crafting papers on machine learning.
+\newblock In Langley, Pat (ed.), \emph{Proceedings of the 17th International
+  Conference on Machine Learning (ICML 2000)}, pp.\  1207--1216, Stanford, CA,
+  2000. Morgan Kaufmann.
+
+\bibitem[Matteson \& Tsay(2016)Matteson and Tsay]{matteson2016independent}
+Matteson, David~S and Tsay, Ruey~S.
+\newblock Independent component analysis via distance covariance.
+\newblock \emph{Journal of the American Statistical Association}, \penalty0
+  (just-accepted):\penalty0 1--38, 2016.
+
+\bibitem[Munkres(1997)]{munkres1997analysis}
+Munkres, James~R.
+\newblock \emph{Analysis on manifolds}.
+\newblock Westview Press, 1997.
+
+\bibitem[Samworth et~al.(2012)Samworth, Yuan, et~al.]{samworth2012independent}
+Samworth, Richard~J, Yuan, Ming, et~al.
+\newblock Independent component analysis via nonparametric maximum likelihood
+  estimation.
+\newblock \emph{The Annals of Statistics}, 40\penalty0 (6):\penalty0
+  2973--3002, 2012.
+
+\bibitem[St{\"o}gbauer et~al.(2004)St{\"o}gbauer, Kraskov, Astakhov, and
+  Grassberger]{stogbauer2004least}
+St{\"o}gbauer, Harald, Kraskov, Alexander, Astakhov, Sergey~A, and Grassberger,
+  Peter.
+\newblock Least-dependent-component analysis based on mutual information.
+\newblock \emph{Physical Review E}, 70\penalty0 (6):\penalty0 066123, 2004.
+
+\bibitem[Virta et~al.(2015)Virta, Nordhausen, and Oja]{virta2015joint}
+Virta, Joni, Nordhausen, Klaus, and Oja, Hannu.
+\newblock Joint use of third and fourth cumulants in independent component
+  analysis.
+\newblock \emph{arXiv preprint arXiv:1505.02613}, 2015.
+
+\bibitem[Wang et~al.(2015)Wang, Du, Zhang, and Zhang]{wang2015abundance}
+Wang, Nan, Du, Bo, Zhang, Liangpei, and Zhang, Lifu.
+\newblock An abundance characteristic-based independent component analysis for
+  hyperspectral unmixing.
+\newblock \emph{IEEE Transactions on Geoscience and Remote Sensing},
+  53\penalty0 (1):\penalty0 416--428, 2015.
+
+\end{thebibliography}

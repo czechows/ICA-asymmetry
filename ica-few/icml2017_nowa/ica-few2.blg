@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2016/Arch Linux)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: ica-few2.aux
+The style file: plain.bst
+Database file #1: ref.bib
+You've used 35 entries,
+            2118 wiz_defined-function locations,
+            715 strings with 10399 characters,
+and the built_in function-call counts, 12038 in all, are:
+= -- 1206
+> -- 580
+< -- 8
++ -- 234
+- -- 192
+* -- 885
+:= -- 2008
+add.period$ -- 108
+call.type$ -- 35
+change.case$ -- 190
+chr.to.int$ -- 0
+cite$ -- 35
+duplicate$ -- 423
+empty$ -- 913
+format.name$ -- 192
+if$ -- 2477
+int.to.chr$ -- 0
+int.to.str$ -- 35
+missing$ -- 33
+newline$ -- 178
+num.names$ -- 70
+pop$ -- 169
+preamble$ -- 1
+purify$ -- 161
+quote$ -- 0
+skip$ -- 311
+stack$ -- 0
+substring$ -- 824
+swap$ -- 83
+text.length$ -- 8
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 136
+warning$ -- 0
+while$ -- 121
+width$ -- 37
+write$ -- 385

@@ -1,0 +1,27 @@
+ICA is similar in many aspects to principal component analysis (PCA). In PCA we look for an orthonormal change of basis so that the components are not
+linearly dependent (uncorrelated).
+ICA can be described as a search for the optimal basis (coordinate system) in which the components are independent. Let us now, for the readers convenience, describe how the 
+ICA works. The data are represented by the random vector $\x$
+ and the components as the random vector~$s$.  Our aim is to transform the observed data $\x$ into maximally independent components $s$ with respect to some measure  
+of independence. Here we use a linear static transformation $W$, called the {\em transformation matrix}, combined with the formula 
+$$
+s = W \x.
+$$
+
+Popular ICA methodology does not directly attempt to find components that are independent but rather components that are as non-Gaussian as possible.
+This follows from the fact that one of the theoretical foundations of ICA is given by the dual view at the Central Limit Theorem \cite{hyvarinen2000independent}, which states that the distribution of the sum (average or linear combination) of $N$ independent random variables approaches Gaussian as  $N\rightarrow \infty$. Obviously if all source variables are Gaussian, the ICA method will not work. 
+
+There exists many different approaches to ICA which uses negentropy \cite{hyvarinen2000independent}, cumulant-based methods \cite{cardoso1993blind,virta2015joint}, maximum likelihood methods \cite{chen2006efficient,samworth2012independent} and methods that directly minimize a measure of dependence \cite{stogbauer2004least,matteson2016independent}.
+
+In many application the number of sources is unknown and may be less than the number of sensors. In such situation we are looking for so-called non-square mixing matrix.
+In practice, PCA is applied to the observations prior to classic ICA (PCA+ICA) to meet the assumption of square mixing and to reduce computational
+costs \cite{hyvarinen2004independent}. PCA+ICA is commonly used to identify brain networks
+in functional magnetic resonance imaging (fMRI) \cite{beckmann2012modelling,green2002pca} and hyperspectral unmixing \cite{wang2015abundance,caiafa2008blind}.
+
+The problem in such approach is that interesting independent components (ICs) could be mixed in several principal components that are discarded and then these ICs cannot be recovered.
+
+In the paper we present two methods dedicated to a maximum-likelihood framework. In the firs case we are looking directly $d \leq D$ independent component by maximization of likelihood function. The second method work in full dimensional space by  estimating density congaing $d$ non-gaussian components (independent ones) and $D-d$ gaussian ones which model a noise.  
+
+[!!!Opisac w miare dokladnie nasze podejscie!!!]
+
+
