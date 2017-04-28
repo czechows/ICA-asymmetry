@@ -4,7 +4,7 @@
 #' @keywords Independent Component Analysis
 #' @export
 #' @examples 
-#' ICA(data)
+#' ICAA(data)
 ICAA<-function(X)
 {
   M = colMeans(X) 
