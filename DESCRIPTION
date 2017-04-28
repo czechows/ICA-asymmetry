@@ -1,12 +1,12 @@
 Package: ICAA
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Independent Component Analysis through Asymmetry
+Version: 0.1.1
+Author: Aleksander Czechowski
+Maintainer: Aleksander Czechowski <aleksander.czechowski@dynniq.com>
+Description: Independent Component Analysis function based on data asymmetry, 
+    as described in the recent preprint arXiv:1701.09160
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: Rcpp (>= 0.12.9)
