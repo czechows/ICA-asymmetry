@@ -1,6 +1,7 @@
 #rm(list = ls())
 library(pixmap)
 library(png)
+library(ICAA)
 
 script.dir <- dirname(sys.frame(1)$ofile)
 
