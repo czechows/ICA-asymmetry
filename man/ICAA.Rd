@@ -13,7 +13,7 @@ S, M and W as in the ICAA paper of Spurek et al. (2017)
 The ICA function based on asymmetry
 }
 \examples{
-ICA(data)
+ICAA(data)
 }
 \keyword{Analysis}
 \keyword{Component}
