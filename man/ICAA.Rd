@@ -4,10 +4,10 @@
 \alias{ICAA}
 \title{The ICA function based on asymmetry}
 \usage{
-ICAA(myX)
+ICAA(X)
 }
 \value{
-M and W as in the ICAA paper
+S, M and W as in the ICAA paper of Spurek et al. (2017)
 }
 \description{
 The ICA function based on asymmetry

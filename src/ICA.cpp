@@ -8,7 +8,6 @@ using namespace std;
 using namespace dlib;
 using namespace Rcpp;
 
-
 typedef matrix<double,0,1> column_vector;
 
 struct ICAC{
@@ -30,10 +29,8 @@ struct ICAC{
 
 };
 
-
 double ICAC::d = 0.; 
 matrix<double> ICAC::X;
-
 
 double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
 {
@@ -78,11 +75,7 @@ double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
   return log(result);
 }
 
-
-
-
-
-const column_vector grad_lnl (const column_vector& _mW ) // to be substituted with the assymetry derivative
+const column_vector grad_lnl (const column_vector& _mW ) 
 {
   double d = ICAC::d;
 
@@ -141,7 +134,7 @@ const column_vector grad_lnl (const column_vector& _mW ) // to be substituted wi
     }
   }
 
-  for( int k=0; k < d; k++ ) // TODO: rewrite as matrix multiplication (vectorize)
+  for( int k=0; k < d; k++ ) 
   {
     result(k) = 0.;
 
@@ -157,12 +150,11 @@ const column_vector grad_lnl (const column_vector& _mW ) // to be substituted wi
       if( s2(j) == 0. )
         factor2 = 0.;
 
-      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); // TODO: redo indices to match the paper 
+      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); 
     }
   }
 
-
-  for( int p=0; p < d; p++ ) // TODO: rewrite as matrix multiplication (vectorize)
+  for( int p=0; p < d; p++ ) 
   {
     for( int k=0; k < d; k++ )
     {
@@ -184,13 +176,7 @@ const column_vector grad_lnl (const column_vector& _mW ) // to be substituted wi
   return result;
 }
 
-
-
-
-
-
-
-// [[Rcpp::export]]
+// [[Rcpp::export(.ICAA_cpp)]]
 RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW ) {
 
   std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );
@@ -199,21 +185,12 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
   std::vector< double > _W = as< std::vector<double> >( transpose( WW ) );
   matrix<double> W = reshape( mat( _W ), WW.nrow(), WW.ncol() );
 
-
   std::vector<double> _m = as< std::vector<double> >(mm);
   column_vector m( _m.size() );
   m = mat( _m );
 
-
   ICAC::d = W.nr();
   ICAC my_ica( m ,W );
-
-  // TODO: erase these couts
- /* cout << "lnl = " << lnl( my_ica.mW ) << "\n";
-  cout << "der lnl = \n" << derivative(lnl, 1e-5)( my_ica.mW ) << "\n";
-  cout << "grad_lnl = \n" << grad_lnl( my_ica.mW ) << "\n";
-  cout << "error = \n" <<  derivative(lnl, 1e-5)( my_ica.mW ) - grad_lnl( my_ica.mW ) << "\n";
-*/
 
   column_vector test = my_ica.mW;
 
@@ -221,11 +198,6 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
       lnl, grad_lnl, my_ica.mW, -1);
 
- /* double result2 = find_min_using_approximate_derivatives(bfgs_search_strategy(),  // Use BFGS search algorithm
-      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-      lnl, test, -1);
-  cout << "minimum verification = " << result2 << "\n";*/
-  
   matrix<double> mW = reshape( my_ica.mW, ICAC::d+1, ICAC::d );
 
   for( int i = 0; i < ICAC::d; i++ )
