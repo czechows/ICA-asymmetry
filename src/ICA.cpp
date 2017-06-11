@@ -17,7 +17,8 @@ struct ICAC{
     matrix<double> W;
 
   public:
-    static double d;
+    static int d;
+    static int D;
     column_vector mW;
     static matrix<double> X;
     ICAC( const column_vector& m, const matrix<double>& W ):
@@ -29,12 +30,12 @@ struct ICAC{
 
 };
 
-double ICAC::d = 0.; 
+int ICAC::d = 0.; 
 matrix<double> ICAC::X;
 
 double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
 {
-  double d = ICAC::d;
+  int d = ICAC::d;
 
   matrix<double> mW = reshape( _mW, d+1, d );
   matrix<double> W = rowm(mW, range(1,d));
@@ -176,7 +177,7 @@ const column_vector grad_lnl (const column_vector& _mW )
   return result;
 }
 
-// [[Rcpp::export(.ICAA_cpp)]]
+// [[Rcpp::export(ICA)]]
 RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW ) {
 
   std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );

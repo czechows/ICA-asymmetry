@@ -11,7 +11,7 @@ ICAA<-function(X)
   W = eigen(cov(X),symmetric=TRUE)[[2]]
   
   # returns minimum, writes argmin to M, W
-  .ICAA_cpp( X, M, W )
+  ICA( X, M, W )
   
   return( list( scale(X%*%W), M, W) )
 }
