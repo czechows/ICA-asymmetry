@@ -31,20 +31,22 @@ struct ICAC{
 };
 
 int ICAC::d = 0.; 
+int ICAC::D = 0.;
 matrix<double> ICAC::X;
 
-double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
+double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
 {
   int d = ICAC::d;
+  int D = ICAC::D;
 
-  matrix<double> mW = reshape( _mW, d+1, d );
-  matrix<double> W = rowm(mW, range(1,d));
+  matrix<double> mW = reshape( _mW, D+1, D );
+  matrix<double> W = rowm(mW, range(1,D));
   matrix<double> m = rowm(mW, 0);
 
   int n = ICAC::X.nr();
 
-  column_vector s1(d);
-  column_vector s2(d);
+  column_vector s1(D);
+  column_vector s2(D);
   column_vector g(d);
 
   for( int j=0; j < d; j++ )
@@ -73,33 +75,39 @@ double lnl ( const column_vector& _mW ) // to be substituted with the assymetry
     result = result*g(j);
   }
 
+  for( int j=d; j<D; j++ )
+  {
+    result = result*pow( s1(j) + s2(j), 1./3. );
+  }
+
   return log(result);
 }
 
 const column_vector grad_lnl (const column_vector& _mW ) 
 {
-  double d = ICAC::d;
+  int d = ICAC::d;
+  int D = ICAC::D;
 
   column_vector result = _mW;
 
-  matrix<double> mW = reshape( _mW, d+1, d );
-  matrix<double> W = rowm(mW, range(1,d));
+  matrix<double> mW = reshape( _mW, D+1, D );
+  matrix<double> W = rowm(mW, range(1,D));
   matrix<double> m = rowm(mW, 0);
 
   matrix<double> inv_tran_W = trans( inv( W ) );
 
   int n = ICAC::X.nr();
 
-  column_vector s1(d);
+  column_vector s1(D);
   column_vector s2(d);
 
-  column_vector grad_s1(d);
-  column_vector grad_s2(d);
+  column_vector grad_s1(D);
+  column_vector grad_s2(D);
 
-  matrix<double> der_s1 = zeros_matrix<double>(d,d);
-  matrix<double> der_s2 = zeros_matrix<double>(d,d);
+  matrix<double> der_s1 = zeros_matrix<double>(D,D);
+  matrix<double> der_s2 = zeros_matrix<double>(D,D);
 
-  for( int j=0; j < d; j++ )
+  for( int j=0; j < D; j++ )
   {
     s1(j)=0;
     s2(j)=0;
@@ -115,7 +123,7 @@ const column_vector grad_lnl (const column_vector& _mW )
         s1(j) += val*val;
         grad_s1(j) += 2*val;
 
-        for( int k=0; k<d; k++ )
+        for( int k=0; k<D; k++ )
         {
           der_s1(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
         }
@@ -127,7 +135,7 @@ const column_vector grad_lnl (const column_vector& _mW )
         grad_s2(j) += 2*val;
 
 
-        for( int k=0; k<d; k++ )
+        for( int k=0; k<D; k++ )
         {
           der_s2(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
         }
@@ -135,7 +143,7 @@ const column_vector grad_lnl (const column_vector& _mW )
     }
   }
 
-  for( int k=0; k < d; k++ ) 
+  for( int k=0; k < D; k++ ) 
   {
     result(k) = 0.;
 
@@ -152,6 +160,13 @@ const column_vector grad_lnl (const column_vector& _mW )
         factor2 = 0.;
 
       result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); 
+    }
+
+    for( int j=d; j < D; j++ )
+    {
+      double factor = -1. /( 3.*( s1(j) + s2(j) ) );
+
+      result(k) += factor*( grad_s1(j)*W(k,j) + grad_s2(j)*W(k,j) ); 
     }
   }
 
@@ -171,6 +186,8 @@ const column_vector grad_lnl (const column_vector& _mW )
         factor2 = 0.;
 
       result( d + p*d + k ) = factor*( factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - (2./3.)*inv_tran_W( p, k ); 
+      result( d + p*d + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( 3.*( s1(p) + s2(p) ) ); 
+
     }
   }
 
@@ -178,8 +195,7 @@ const column_vector grad_lnl (const column_vector& _mW )
 }
 
 // [[Rcpp::export(ICA)]]
-RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW ) {
-
+RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, int gauss_noise = 0. ) {
   std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );
   ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
 
@@ -189,9 +205,11 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
   std::vector<double> _m = as< std::vector<double> >(mm);
   column_vector m( _m.size() );
   m = mat( _m );
+ 
+  ICAC::D = W.nr();
+  ICAC::d = W.nr() - gauss_noise;
 
-  ICAC::d = W.nr();
-  ICAC my_ica( m ,W );
+  ICAC my_ica( m, W );
 
   column_vector test = my_ica.mW;
 
@@ -199,13 +217,13 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
       lnl, grad_lnl, my_ica.mW, -1);
 
-  matrix<double> mW = reshape( my_ica.mW, ICAC::d+1, ICAC::d );
+  matrix<double> mW = reshape( my_ica.mW, ICAC::D+1, ICAC::D );
 
-  for( int i = 0; i < ICAC::d; i++ )
+  for( int i = 0; i < ICAC::D; i++ )
   {
     mm( i ) = mW( 0, i );
 
-    for( int j = 0; j < ICAC::d; j++ )
+    for( int j = 0; j < ICAC::D; j++ )
     {
       WW(j,i) = mW( j+1, i );
     }
