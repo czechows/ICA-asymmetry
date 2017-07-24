@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 ICA <- function(XX, mm, WW, gauss_noise = 0.) {
-    .Call('_ICAA_ICA', PACKAGE = 'ICAA', XX, mm, WW, gauss_noise)
+    .Call('ICAA_ICA', PACKAGE = 'ICAA', XX, mm, WW, gauss_noise)
 }
 
