@@ -9,6 +9,6 @@ Description: Independent Component Analysis function based on data asymmetry,
 License: GPL-3c
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 0.12.9)
-LinkingTo: Rcpp, dlib
+Imports: Rcpp (>= 0.12.9), BH
+LinkingTo: Rcpp, dlib, BH
 RoxygenNote: 6.0.1

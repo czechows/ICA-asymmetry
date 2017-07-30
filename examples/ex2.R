@@ -41,7 +41,7 @@ plot(imageMix2)
 invisible(readline(prompt="Plotting image mix 2. Press [enter] to continue.."))
 
 plot(imageMix3)
-invisible(readline(prompt="Plotting image mix 2. Press [enter] to continue.."))
+invisible(readline(prompt="Plotting image mix 3. Press [enter] to continue.."))
 
 
 # ICAA magic here -- original images are retrieved!
@@ -54,4 +54,4 @@ plot(pixmapRGB(matrix(Snew[,2], nrow=size,byrow=FALSE), nrow=size, cellres=1),as
 invisible(readline(prompt="Plotting retrieved image 2. Press [enter] to continue.."))
 
 plot(pixmapRGB(matrix(-Snew[,3], nrow=size,byrow=FALSE), nrow=size, cellres=1),asp=1)
-invisible(readline(prompt="Plotting retrieved image 2. Press [enter] to continue.."))
+invisible(readline(prompt="Plotting retrieved image 3. Press [enter] to continue.."))

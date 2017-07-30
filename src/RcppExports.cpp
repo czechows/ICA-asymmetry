@@ -8,8 +8,8 @@
 using namespace Rcpp;
 
 // ICA
-RcppExport SEXP ICA(const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, int gauss_noise);
-RcppExport SEXP _ICAA_ICA(SEXP XXSEXP, SEXP mmSEXP, SEXP WWSEXP, SEXP gauss_noiseSEXP) {
+RcppExport SEXP ICA(const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, int gauss_noise, bool generalized, double c);
+RcppExport SEXP _ICAA_ICA(SEXP XXSEXP, SEXP mmSEXP, SEXP WWSEXP, SEXP gauss_noiseSEXP, SEXP generalizedSEXP, SEXP cSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -17,13 +17,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector& >::type mm(mmSEXP);
     Rcpp::traits::input_parameter< NumericMatrix& >::type WW(WWSEXP);
     Rcpp::traits::input_parameter< int >::type gauss_noise(gauss_noiseSEXP);
-    rcpp_result_gen = Rcpp::wrap(ICA(XX, mm, WW, gauss_noise));
+    Rcpp::traits::input_parameter< bool >::type generalized(generalizedSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    rcpp_result_gen = Rcpp::wrap(ICA(XX, mm, WW, gauss_noise, generalized, c));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ICAA_ICA", (DL_FUNC) &_ICAA_ICA, 4},
+    {"_ICAA_ICA", (DL_FUNC) &_ICAA_ICA, 6},
     {NULL, NULL, 0}
 };
 
