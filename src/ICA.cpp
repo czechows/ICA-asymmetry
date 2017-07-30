@@ -49,7 +49,7 @@ double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
   column_vector s2(D);
   column_vector g(d);
 
-  for( int j=0; j < d; j++ )
+  for( int j=0; j < D; j++ )
   {
     s1(j)=0;
     s2(j)=0;
@@ -65,7 +65,10 @@ double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
 
     }
 
-    g(j) = pow(s1(j), 1./3.) + pow(s2(j), 1./3.);
+    if( j<d )
+    {
+      g(j) = pow(s1(j), 1./3.) + pow(s2(j), 1./3.);
+    }
   }
 
   double result = 1./pow( abs(det(W)), 2./3. );
@@ -77,7 +80,7 @@ double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
 
   for( int j=d; j<D; j++ )
   {
-    result = result*pow( s1(j) + s2(j), 1./3. );
+    result = result*pow( (s1(j) + s2(j)), 1./3. );
   }
 
   return log(result);
@@ -99,7 +102,7 @@ const column_vector grad_lnl (const column_vector& _mW )
   int n = ICAC::X.nr();
 
   column_vector s1(D);
-  column_vector s2(d);
+  column_vector s2(D);
 
   column_vector grad_s1(D);
   column_vector grad_s2(D);
@@ -165,14 +168,16 @@ const column_vector grad_lnl (const column_vector& _mW )
     for( int j=d; j < D; j++ )
     {
       double factor = -1. /( 3.*( s1(j) + s2(j) ) );
+      if( s1(j) + s2(j) == 0. )
+        factor = 0.;
 
       result(k) += factor*( grad_s1(j)*W(k,j) + grad_s2(j)*W(k,j) ); 
     }
   }
 
-  for( int p=0; p < d; p++ ) 
+  for( int p=0; p < D; p++ ) 
   {
-    for( int k=0; k < d; k++ )
+    for( int k=0; k < D; k++ )
     {
       double factor =  1. /( pow( s1(k), 1./3. ) + pow( s2(k), 1./3. ) );
 
@@ -185,8 +190,8 @@ const column_vector grad_lnl (const column_vector& _mW )
       if( s2(k) == 0. )
         factor2 = 0.;
 
-      result( d + p*d + k ) = factor*( factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - (2./3.)*inv_tran_W( p, k ); 
-      result( d + p*d + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( 3.*( s1(p) + s2(p) ) ); 
+      result( D + p*D + k ) = factor*( factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - (2./3.)*inv_tran_W( p, k ); 
+      result( D + p*D + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( 3.*( s1(p) + s2(p) ) ); 
 
     }
   }
@@ -195,7 +200,7 @@ const column_vector grad_lnl (const column_vector& _mW )
 }
 
 // [[Rcpp::export(ICA)]]
-RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, int gauss_noise = 0. ) {
+RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, int gauss_noise = 0 ) {
   std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );
   ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
 

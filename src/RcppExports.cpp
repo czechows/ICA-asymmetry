@@ -9,7 +9,7 @@ using namespace Rcpp;
 
 // ICA
 RcppExport SEXP ICA(const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, int gauss_noise);
-RcppExport SEXP ICAA_ICA(SEXP XXSEXP, SEXP mmSEXP, SEXP WWSEXP, SEXP gauss_noiseSEXP) {
+RcppExport SEXP _ICAA_ICA(SEXP XXSEXP, SEXP mmSEXP, SEXP WWSEXP, SEXP gauss_noiseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -20,4 +20,14 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(ICA(XX, mm, WW, gauss_noise));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_ICAA_ICA", (DL_FUNC) &_ICAA_ICA, 4},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_ICAA(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
