@@ -47,14 +47,27 @@ int ICAC::D = 0.;
 bool ICAC::generalized = 0;
 matrix<double> ICAC::X;
 
-double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
+double lnl ( const column_vector& args ) // to be substituted with the asymmetry
 {
   int d = ICAC::d;
   int D = ICAC::D;
+  bool generalized = ICAC::generalized;
 
-  matrix<double> mW = reshape( _mW, D+1, D );
+  matrix<double> mW; 
+  if( generalized )
+    mW = subm( args, range(0, args.nr() - 2), range(0,0) );
+  else
+    mW = args;
+
+  mW = reshape( mW, D+1, D );
   matrix<double> W = rowm(mW, range(1,D));
   matrix<double> m = rowm(mW, 0);
+
+  double c;
+  if( ICAC::generalized )
+    c= args( args.nr() - 1 );
+  else 
+    c=2.;
 
   int n = ICAC::X.nr();
 
@@ -72,19 +85,19 @@ double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
       double val = trans( colm(W,j) )*trans( rowm(ICAC::X,i) - m );
 
       if( val <= 0. )
-        s1(j) += val*val;
+        s1(j) += pow( abs(val), c );
       else
-        s2(j) += val*val;
+        s2(j) += pow( abs(val), c );
 
     }
 
     if( j<d )
     {
-      g(j) = pow(s1(j), 1./3.) + pow(s2(j), 1./3.);
+      g(j) = pow(s1(j), 1./(c+1.) ) + pow(s2(j), 1./(c+1.) );
     }
   }
 
-  double result = 1./pow( abs(det(W)), 2./3. );
+  double result = 1./pow( abs(det(W)), c/(c+1.) );
 
   for( int j=0; j<d; j++ )
   {
@@ -93,7 +106,7 @@ double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
 
   for( int j=d; j<D; j++ )
   {
-    result = result*pow( (s1(j) + s2(j)), 1./3. );
+    result = result*pow( (s1(j) + s2(j)), 1./(c+1.) );
   }
 
   return log(result);
@@ -102,8 +115,6 @@ double lnl ( const column_vector& _mW ) // to be substituted with the asymmetry
 // only for the generalized distribution (with c), the other methods are equivalent with lnl
 double lnL( const column_vector& _mWC )
 {
-  cout << "ITER\n";
-
   double result = 0.;
   double c = _mWC( _mWC.nr() - 1 );
   int n = ICAC::X.nr();
@@ -115,21 +126,34 @@ double lnL( const column_vector& _mWC )
   result = result*log( kappa*n/(c*e) ); 
   column_vector _mW = subm( _mWC, range(0, _mWC.nr() - 2), range(0,0) );
 
-  result = result - (n*(c+1)/c )*lnl( _mW );
+  result = result - (n*(c+1)/c )*lnl( _mWC );
 
   return result;
 }
 
-const column_vector grad_lnl (const column_vector& _mW ) 
+column_vector grad_lnl (const column_vector& args ) 
 {
   int d = ICAC::d;
   int D = ICAC::D;
+  bool generalized = ICAC::generalized;
 
-  column_vector result = _mW;
+  column_vector result = args;
 
-  matrix<double> mW = reshape( _mW, D+1, D );
+  matrix<double> mW; 
+  if( generalized )
+    mW = subm( args, range(0, args.nr() - 2), range(0,0) );
+  else
+    mW = args;
+
+  mW = reshape( mW, D+1, D );
   matrix<double> W = rowm(mW, range(1,D));
   matrix<double> m = rowm(mW, 0);
+
+  double c;
+  if( ICAC::generalized )
+    c= args( args.nr() - 1 );
+  else 
+    c=2.;
 
   matrix<double> inv_tran_W = trans( inv( W ) );
 
@@ -140,7 +164,10 @@ const column_vector grad_lnl (const column_vector& _mW )
 
   column_vector grad_s1(D);
   column_vector grad_s2(D);
-
+ 
+  column_vector der_s1_c(D);
+  column_vector der_s2_c(D);
+  
   matrix<double> der_s1 = zeros_matrix<double>(D,D);
   matrix<double> der_s2 = zeros_matrix<double>(D,D);
 
@@ -150,6 +177,8 @@ const column_vector grad_lnl (const column_vector& _mW )
     s2(j)=0;
     grad_s1(j)=0;
     grad_s2(j)=0;
+    der_s1_c(j)=0;
+    der_s2_c(j)=0;
 
     for( int i=0; i < n; i++ )
     {
@@ -157,24 +186,26 @@ const column_vector grad_lnl (const column_vector& _mW )
 
       if( val <= 0. )
       {
-        s1(j) += val*val;
-        grad_s1(j) += 2*val;
+        s1(j) += pow(abs(val), c);
+        grad_s1(j) += c*pow( abs(val), c-1. );
+        der_s1_c(j) += pow( abs(val), c )*log( abs( val ) );
 
         for( int k=0; k<D; k++ )
         {
-          der_s1(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
+          der_s1(j,k) += c*pow( abs(val), c-1. )*( ICAC::X(i,k) - m(k) );
         }
 
       }
       else
       {
-        s2(j) += val*val;
-        grad_s2(j) += 2*val;
+        s2(j) += pow(abs(val), c);
+        grad_s2(j) += c*pow( abs(val), c-1. );
+        der_s2_c(j) += pow( abs(val), c )*log( abs( val ) );
 
 
         for( int k=0; k<D; k++ )
         {
-          der_s2(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
+          der_s2(j,k) += c*pow( abs(val), c-1. )*( ICAC::X(i,k) - m(k) );
         }
       }
     }
@@ -186,20 +217,20 @@ const column_vector grad_lnl (const column_vector& _mW )
 
     for( int j=0; j < d; j++ )
     {
-      double factor =  -1. /( pow( s1(j), 1./3. ) + pow( s2(j), 1./3. ) );
+      double factor =  -1. /( pow( s1(j), 1./(c+1.) ) + pow( s2(j), 1./(c+1.) ) );
       
-      double factor1 = 1. /( 3. * pow( s1(j), 2./3. ) );
+      double factor1 = 1. /( (c+1) * pow( s1(j), c/(c+1.) ) );
       if( s1(j) == 0. )
         factor1 = 0.;
 
-      double factor2 = 1. /( 3. * pow( s2(j), 2./3. ) );
+      double factor2 = 1. /( (c+1) * pow( s2(j), c/(c+1.) ) );
       if( s2(j) == 0. )
         factor2 = 0.;
 
       result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); 
     }
 
-    for( int j=d; j < D; j++ )
+    for( int j=d; j < D; j++ ) // TODO: add c once formulas become available
     {
       double factor = -1. /( 3.*( s1(j) + s2(j) ) );
       if( s1(j) + s2(j) == 0. )
@@ -213,144 +244,65 @@ const column_vector grad_lnl (const column_vector& _mW )
   {
     for( int k=0; k < D; k++ )
     {
-      double factor =  1. /( pow( s1(k), 1./3. ) + pow( s2(k), 1./3. ) );
+      double factor =  1. /( pow( s1(k), 1./( c + 1. ) ) + pow( s2(k), 1./( c + 1. ) ) );
 
-      double factor1 = 1. /( 3. * pow( s1(k), 2./3. ) );
+      double factor1 = 1. /( (c+1) * pow( s1(k), c/( c + 1. ) ) );
       if( s1(k) == 0. )
         factor1 = 0.;
 
 
-      double factor2 = 1. /( 3. * pow( s2(k), 2./3. ) );  // TODO: redo indices to match the paper 
+      double factor2 = 1. /( (c+1) * pow( s2(k), c/( c + 1. ) ) );  // TODO: redo indices to match the paper 
       if( s2(k) == 0. )
         factor2 = 0.;
 
-      result( D + p*D + k ) = factor*( factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - (2./3.)*inv_tran_W( p, k ); 
-      result( D + p*D + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( 3.*( s1(p) + s2(p) ) ); 
+      result( D + p*D + k ) = factor*( -factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - ( c/(c+1.) )*inv_tran_W( p, k ); 
 
+      if( d<D ) // noise terms, TODO: check with Przemek whether this is the correct formula
+      {
+        result( D + p*D + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( 3.*( s1(p) + s2(p) ) ); 
+      }
+
+    }
+  }
+
+  if( ICAC::generalized )
+  {
+    result( result.nr() - 1 ) = 0.; 
+
+    for( int j=0; j<D; j++ ) 
+    {
+      double factor =  1. /( pow( s1(j), 1./( c + 1. ) ) + pow( s2(j), 1./( c + 1. ) ) );
+      double sum = 0.;
+      sum += ( 1./(c+1.) )*der_s1_c(j)*pow( s1(j), -c/(c+1.) );
+      sum += -pow( s1(j), 1./(c+1.) ) * log(s1(j)) / pow( c+1., 2. );
+      sum += (1./(c+1.)) * pow( s2(j), -c/(c+1.) ) * der_s2_c(j);
+      sum += -pow( s2(j), 1./(c+1.) ) * log( s2(j) ) / pow( c+1., 2. );
+      result( result.nr() - 1 ) += factor*sum;
     }
   }
 
   return result;
 }
 
-/*
-const column_vector grad_Lnl (const column_vector& _mWC ) 
+column_vector grad_lnL (const column_vector& args ) 
 {
-  int d = ICAC::d;
   int D = ICAC::D;
-
-  column_vector result = _mWC;
-
-  matrix<double> mW = reshape( _mW, D+1, D );
-  matrix<double> W = rowm(mW, range(1,D));
-  matrix<double> m = rowm(mW, 0);
-
-  matrix<double> inv_tran_W = trans( inv( W ) );
-
+  int d = ICAC::d;
   int n = ICAC::X.nr();
+  double c = args( args.nr() - 1 );
+  double e = std::exp(1);
 
-  column_vector s1(D);
-  column_vector s2(D);
+  column_vector result = -n*(c+1)*grad_lnl( args ) / c;
 
-  column_vector grad_s1(D);
-  column_vector grad_s2(D);
-
-  matrix<double> der_s1 = zeros_matrix<double>(D,D);
-  matrix<double> der_s2 = zeros_matrix<double>(D,D);
-
-  for( int j=0; j < D; j++ )
-  {
-    s1(j)=0;
-    s2(j)=0;
-    grad_s1(j)=0;
-    grad_s2(j)=0;
-
-    for( int i=0; i < n; i++ )
-    {
-      double val = trans( colm(W,j) )*trans( rowm(ICAC::X,i) - m );
-
-      if( val <= 0. )
-      {
-        s1(j) += val*val;
-        grad_s1(j) += 2*val;
-
-        for( int k=0; k<D; k++ )
-        {
-          der_s1(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
-        }
-
-      }
-      else
-      {
-        s2(j) += val*val;
-        grad_s2(j) += 2*val;
-
-
-        for( int k=0; k<D; k++ )
-        {
-          der_s2(j,k) += 2*val*( ICAC::X(i,k) - m(k) );
-        }
-      }
-    }
-  }
-
-  for( int k=0; k < D; k++ ) 
-  {
-    result(k) = 0.;
-
-    for( int j=0; j < d; j++ )
-    {
-      double factor =  -1. /( pow( s1(j), 1./3. ) + pow( s2(j), 1./3. ) );
-      
-      double factor1 = 1. /( 3. * pow( s1(j), 2./3. ) );
-      if( s1(j) == 0. )
-        factor1 = 0.;
-
-      double factor2 = 1. /( 3. * pow( s2(j), 2./3. ) );
-      if( s2(j) == 0. )
-        factor2 = 0.;
-
-      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); 
-    }
-
-    for( int j=d; j < D; j++ )
-    {
-      double factor = -1. /( 3.*( s1(j) + s2(j) ) );
-      if( s1(j) + s2(j) == 0. )
-        factor = 0.;
-
-      result(k) += factor*( grad_s1(j)*W(k,j) + grad_s2(j)*W(k,j) ); 
-    }
-  }
-
-  for( int p=0; p < D; p++ ) 
-  {
-    for( int k=0; k < D; k++ )
-    {
-      double factor =  1. /( pow( s1(k), 1./3. ) + pow( s2(k), 1./3. ) );
-
-      double factor1 = 1. /( 3. * pow( s1(k), 2./3. ) );
-      if( s1(k) == 0. )
-        factor1 = 0.;
-
-
-      double factor2 = 1. /( 3. * pow( s2(k), 2./3. ) );  // TODO: redo indices to match the paper 
-      if( s2(k) == 0. )
-        factor2 = 0.;
-
-      result( D + p*D + k ) = factor*( factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - (2./3.)*inv_tran_W( p, k ); 
-      result( D + p*D + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( 3.*( s1(p) + s2(p) ) ); 
-
-    }
-  }
+  result( result.nr() - 1 ) += n*lnl( args )/pow(c,2.);
+  result( result.nr() - 1 ) += (log(c*e/n) - 1. + c + boost::math::digamma(1./c) )*d*n/pow(c,2.);
 
   return result;
 
 }
-*/
 
 // [[Rcpp::export(ICA)]]
-RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, int gauss_noise = 0, bool generalized = 1, double c = 1. ) {
+RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, double& c, int gauss_noise = 0, bool generalized = 0 ) {
   std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );
   ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
 
@@ -378,8 +330,8 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
   if( ICAC::generalized )
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
-      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-      lnL, grad_lnl, my_ica.args, -1);
+      objective_delta_stop_strategy(1e-25).be_verbose(), // Stop when the change in function() is less than 1e-7
+      lnL, grad_lnL, my_ica.args, -1);
   }
   else
   {
@@ -388,6 +340,9 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
       lnl, grad_lnl, my_ica.args, -1);
   }
  
+  if( generalized )
+    c = my_ica.args( my_ica.args.nr() - 1. );
+
   matrix<double> args = reshape( my_ica.args, ICAC::D+1, ICAC::D );
 
   for( int i = 0; i < ICAC::D; i++ )

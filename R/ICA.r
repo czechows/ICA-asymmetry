@@ -1,16 +1,16 @@
 #' The ICA function based on asymmetry
 #'
-#' @return S, M and W as in the ICAA paper of Spurek et al. (2017)
+#' @return S, M, W, c as in the ICAA paper of Spurek et al. (2017)
 #' @keywords Independent Component Analysis
 #' @export
 #' @examples 
 #' ICAA(data)
-ICAA<-function(X, noise=0, generalized=0, M = colMeans(X), W = eigen(cov(X),symmetric=TRUE)[[2]] )
+ICAA<-function(X, noise=0, generalized=0, M = colMeans(X), W = eigen(cov(X),symmetric=TRUE)[[2]], c=2.0 )
 {
-  # returns minimum, writes argmin to M, W
-  ICA( X, M, W, noise, generalized )
+  # returns minimum, writes argmin to M, W, c
+  ICA( X, M, W, c, noise, generalized )
   
-  return( list( scale(X%*%W), M, W) )
+  return( list( scale(X%*%W), M, W, c) )
 }
 
 

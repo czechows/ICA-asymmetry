@@ -45,7 +45,7 @@ invisible(readline(prompt="Plotting image mix 3. Press [enter] to continue.."))
 
 
 # ICAA magic here -- original images are retrieved!
-Snew<-ICAA(X, noise=1)[[1]]
+Snew<-ICAA(X, noise=1, generalized=0)[[1]]
 
 plot(pixmapRGB(matrix(Snew[,1], nrow=size,byrow=FALSE), nrow=size, cellres=1),asp=1)
 invisible(readline(prompt="Plotting retrieved image 1. Press [enter] to continue.."))
