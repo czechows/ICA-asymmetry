@@ -363,13 +363,13 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
   {
       approx_result = find_min_using_approximate_derivatives(bfgs_search_strategy(),
                                              objective_delta_stop_strategy(1e-7),
-                                             lnL, temp_args, -30.);
+                                             lnL, temp_args, -200.);
   }
   else
   {
       approx_result = find_min_using_approximate_derivatives(bfgs_search_strategy(),
                                              objective_delta_stop_strategy(1e-7),
-                                             lnl, temp_args, -30.);
+                                             lnl, temp_args, -200.);
   }
 
 
