@@ -4,10 +4,11 @@
 \alias{ICAA}
 \title{The ICA function based on asymmetry}
 \usage{
-ICAA(X)
+ICAA(X, noise = 0, generalized = 0, M = colMeans(X), W = eigen(cov(X),
+  symmetric = TRUE)[[2]], c = 2)
 }
 \value{
-S, M and W as in the ICAA paper of Spurek et al. (2017)
+S, M, W, c as in the ICAA paper of Spurek et al. (2017)
 }
 \description{
 The ICA function based on asymmetry

@@ -9,7 +9,7 @@ ICAA<-function(X, noise=0, generalized=0, M = colMeans(X), W = eigen(cov(X),symm
 {
   # returns minimum, writes argmin to M, W, c
   ICA( X, M, W, c, noise, generalized )
-  
+
   return( list( scale(X%*%W), M, W, c) )
 }
 

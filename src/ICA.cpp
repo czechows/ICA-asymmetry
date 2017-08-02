@@ -121,12 +121,12 @@ double lnL( const column_vector& _mWC )
   int d = ICAC::d;
   double e = std::exp(1);
   double kappa = pow( (boost::math::tgamma( 1./c ) )/c, -c );
-
-  result += d*n/c;
+ 
+  result += d;
   result = result*log( kappa*n/(c*e) ); 
   column_vector _mW = subm( _mWC, range(0, _mWC.nr() - 2), range(0,0) );
 
-  result = result - (n*(c+1)/c )*lnl( _mWC );
+  result = result - ( c+1 )*lnl( _mWC );
 
   return result;
 }
@@ -273,10 +273,19 @@ column_vector grad_lnl (const column_vector& args )
     {
       double factor =  1. /( pow( s1(j), 1./( c + 1. ) ) + pow( s2(j), 1./( c + 1. ) ) );
       double sum = 0.;
-      sum += ( 1./(c+1.) )*der_s1_c(j)*pow( s1(j), -c/(c+1.) );
-      sum += -pow( s1(j), 1./(c+1.) ) * log(s1(j)) / pow( c+1., 2. );
-      sum += (1./(c+1.)) * pow( s2(j), -c/(c+1.) ) * der_s2_c(j);
-      sum += -pow( s2(j), 1./(c+1.) ) * log( s2(j) ) / pow( c+1., 2. );
+
+      if( !( s1(j)==0. ) )
+      {
+        sum += ( 1./(c+1.) )*der_s1_c(j)*pow( s1(j), -c/(c+1.) );
+        sum += -pow( s1(j), 1./(c+1.) ) * log( abs(s1(j)) ) / pow( c+1., 2. );
+      }
+
+      if( !( s2(j)==0. ) )
+      {
+        sum += (1./(c+1.)) * pow( s2(j), -c/(c+1.) ) * der_s2_c(j);
+        sum += -pow( s2(j), 1./(c+1.) ) * log( abs(s2(j)) ) / pow( c+1., 2. );
+      }
+
       result( result.nr() - 1 ) += factor*sum;
     }
   }
@@ -292,10 +301,12 @@ column_vector grad_lnL (const column_vector& args )
   double c = args( args.nr() - 1 );
   double e = std::exp(1);
 
-  column_vector result = -n*(c+1)*grad_lnl( args ) / c;
+  //cout << "grad = " << grad_lnl(args) << "\n";
+  column_vector result = -(c+1)*grad_lnl( args );
 
-  result( result.nr() - 1 ) += n*lnl( args )/pow(c,2.);
-  result( result.nr() - 1 ) += (log(c*e/n) - 1. + c + boost::math::digamma(1./c) )*d*n/pow(c,2.);
+  result( result.nr() - 1 ) += lnl( args )/c;
+  result( result.nr() - 1 ) += (log(c*e/n) - 1. + c + boost::math::digamma(1./c) )*d/c;
+
 
   return result;
 
@@ -325,25 +336,51 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
 
   ICAC my_ica( m, W, c );
 
-  double result = 0.; 
+  double result = 1.; 
 
+  // GRADIENT CHECKING
+  column_vector temp_args = my_ica.args;
+/*
   if( ICAC::generalized )
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
-      objective_delta_stop_strategy(1e-25).be_verbose(), // Stop when the change in function() is less than 1e-7
-      lnL, grad_lnL, my_ica.args, -1);
+      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
+      lnL, grad_lnL, my_ica.args, -30.);
   }
   else
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-      lnl, grad_lnl, my_ica.args, -1);
+      lnl, grad_lnl, my_ica.args, -30.);
+
   }
+*/
+  //cout << "Solution : " << my_ica.args << " with minimum " << result << "\n \n";
+
+  double approx_result = 1.;
+
+  if( ICAC::generalized )
+  {
+      approx_result = find_min_using_approximate_derivatives(bfgs_search_strategy(),
+                                             objective_delta_stop_strategy(1e-7),
+                                             lnL, temp_args, -30.);
+  }
+  else
+  {
+      approx_result = find_min_using_approximate_derivatives(bfgs_search_strategy(),
+                                             objective_delta_stop_strategy(1e-7),
+                                             lnl, temp_args, -30.);
+  }
+
+
+  cout << "Solution : " << temp_args << " with minimum " << approx_result << "\n \n";
+
+
  
   if( generalized )
-    c = my_ica.args( my_ica.args.nr() - 1. );
+    c = temp_args( temp_args.nr() - 1. );
 
-  matrix<double> args = reshape( my_ica.args, ICAC::D+1, ICAC::D );
+  matrix<double> args = reshape( temp_args, ICAC::D+1, ICAC::D );
 
   for( int i = 0; i < ICAC::D; i++ )
   {
