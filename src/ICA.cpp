@@ -217,7 +217,7 @@ column_vector grad_lnl (const column_vector& args )
 
     for( int j=0; j < d; j++ )
     {
-      double factor =  -1. /( pow( s1(j), 1./(c+1.) ) + pow( s2(j), 1./(c+1.) ) );
+      double factor =  1. /( pow( s1(j), 1./(c+1.) ) + pow( s2(j), 1./(c+1.) ) );
       
       double factor1 = 1. /( (c+1) * pow( s1(j), c/(c+1.) ) );
       if( s1(j) == 0. )
@@ -227,12 +227,12 @@ column_vector grad_lnl (const column_vector& args )
       if( s2(j) == 0. )
         factor2 = 0.;
 
-      result(k) += factor*( factor1*grad_s1(j)*W(k,j) + factor2*grad_s2(j)*W(k,j) ); 
+      result(k) += factor*( factor1*grad_s1(j)*W(k,j) - factor2*grad_s2(j)*W(k,j) ); 
     }
 
     for( int j=d; j < D; j++ ) // TODO: add c once formulas become available
     {
-      double factor = -1. /( 3.*( s1(j) + s2(j) ) );
+      double factor = -1. /( (c+1.)*( s1(j) + s2(j) ) );
       if( s1(j) + s2(j) == 0. )
         factor = 0.;
 
@@ -259,7 +259,7 @@ column_vector grad_lnl (const column_vector& args )
 
       if( d<D ) // noise terms, TODO: check with Przemek whether this is the correct formula
       {
-        result( D + p*D + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( 3.*( s1(p) + s2(p) ) ); 
+        result( D + p*D + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( (c+1)*( s1(p) + s2(p) ) ); 
       }
 
     }
@@ -301,7 +301,6 @@ column_vector grad_lnL (const column_vector& args )
   double c = args( args.nr() - 1 );
   double e = std::exp(1);
 
-  //cout << "grad = " << grad_lnl(args) << "\n";
   column_vector result = -(c+1)*grad_lnl( args );
 
   result( result.nr() - 1 ) += lnl( args )/c;
@@ -339,30 +338,30 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
   double result = 1.; 
 
   // GRADIENT CHECKING
-  column_vector temp_args = my_ica.args;
+ column_vector temp_args = my_ica.args;
 /*
   if( ICAC::generalized )
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
-      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-      lnL, grad_lnL, my_ica.args, -30.);
+      objective_delta_stop_strategy(1e-7).be_verbose(), // Stop when the change in function() is less than 1e-7
+      lnL, grad_lnL, my_ica.args, -200.);
   }
   else
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-      lnl, grad_lnl, my_ica.args, -30.);
+      lnl, grad_lnl, my_ica.args, -200.);
 
   }
 */
-  //cout << "Solution : " << my_ica.args << " with minimum " << result << "\n \n";
+  cout << "Solution : " << my_ica.args << " with minimum " << result << "\n \n";
 
   double approx_result = 1.;
 
   if( ICAC::generalized )
   {
       approx_result = find_min_using_approximate_derivatives(bfgs_search_strategy(),
-                                             objective_delta_stop_strategy(1e-7),
+                                             objective_delta_stop_strategy(1e-7).be_verbose(),
                                              lnL, temp_args, -200.);
   }
   else
