@@ -33,9 +33,9 @@ plot(imageMix2)
 invisible(readline(prompt="Plotting image mix 2. Press [enter] to continue.."))
 
 # ICAA magic here -- original images are retrieved!
-Snew<-ICAA( X, generalized=1, minimum = -10. )[[1]]
+Snew<-ICAA( X, generalized=1, minimum = -10., accuracy = 1e-5 )[[1]]
 
-plot(pixmapRGB(matrix(-Snew[,1], nrow=size,byrow=FALSE), nrow=size, cellres=1),asp=1)
+plot(pixmapRGB(matrix(Snew[,1], nrow=size,byrow=FALSE), nrow=size, cellres=1),asp=1)
 invisible(readline(prompt="Plotting retrieved image 1. Press [enter] to continue.."))
 
 plot(pixmapRGB(matrix(-Snew[,2], nrow=size,byrow=FALSE), nrow=size, cellres=1),asp=1)

@@ -5,10 +5,10 @@
 #' @export
 #' @examples 
 #' ICAA(data)
-ICAA<-function(X, noise=0, generalized=0, M = colMeans(X), W = eigen(cov(X),symmetric=TRUE)[[2]], c=2.0, minimum = -5.0 )
+ICAA<-function(X, noise=0, generalized=0, M = colMeans(X), W = eigen(cov(X),symmetric=TRUE)[[2]], c=2.0, minimum = -5.0, accuracy=1e-7 )
 {
   # returns minimum, writes argmin to M, W, c
-  ICA( X, M, W, c, noise, generalized, minimum )
+  ICA( X, M, W, c, noise, generalized, minimum, accuracy )
 
   return( list( scale(X%*%W), M, W, c) )
 }

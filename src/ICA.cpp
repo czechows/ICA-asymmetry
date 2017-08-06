@@ -297,7 +297,6 @@ column_vector grad_lnl (const column_vector& args )
       result( result.nr() - 1 ) += -log( abs( det(W) ) ) / pow( (c+1.), 2. ); 
   }
 
-  cout << "grad1 = " << result << "\n";
   return result;
 }
 
@@ -321,7 +320,7 @@ column_vector grad_lnL (const column_vector& args )
 }
 
 // [[Rcpp::export(ICA)]]
-RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, double& c, int gauss_noise = 0, bool generalized = 0, double minimum = -5. ) {
+RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, double& c, int gauss_noise = 0, bool generalized = 0, double minimum = -5., double accuracy = 1e-7 ) {
   std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );
   ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
 
@@ -352,21 +351,21 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
   if( ICAC::generalized )
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
-      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
+      objective_delta_stop_strategy(accuracy), // Stop when the change in function() is less than 1e-7
       lnL, grad_lnL, my_ica.args, minimum);
   }
   else
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
-      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
+      objective_delta_stop_strategy(accuracy), // Stop when the change in function() is less than 1e-7
       lnl, grad_lnl, my_ica.args, minimum);
 
   }
 
- // cout << "Solution : " << my_ica.args << " with minimum " << result << "\n \n";
+  cout << "Solution : " << my_ica.args << " with minimum " << result << "\n \n";
  // GRADIENT CHECKING
   double approx_result = 1.;
-
+/*
   if( ICAC::generalized )
   {
 
@@ -383,7 +382,7 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
                                              objective_delta_stop_strategy(1e-7),
                                              lnl, temp_args, minimum);
   }
-
+*/
   //cout << "Solution : " << temp_args << " with minimum " << approx_result << "\n \n";
 
  
