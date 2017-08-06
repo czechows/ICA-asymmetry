@@ -27,7 +27,7 @@ struct ICAC{
     static bool generalized;
     column_vector args;
     static matrix<double> X;
-    ICAC( const column_vector& m, const matrix<double>& W, const double c = 1. ):
+    ICAC( const column_vector& m, const matrix<double>& W, double& c ):
       m(m),
       W(W)
   {
@@ -96,8 +96,14 @@ double lnl ( const column_vector& args ) // to be substituted with the asymmetry
       g(j) = pow(s1(j), 1./(c+1.) ) + pow(s2(j), 1./(c+1.) );
     }
   }
+ 
+  double result;
 
-  double result = 1./pow( abs(det(W)), c/(c+1.) );
+  if( abs(det(W)) > 1e-2 )
+    result = 1./pow( abs(det(W)), c/(c+1.) );
+  else
+    result = 1.;
+
 
   for( int j=0; j<d; j++ )
   {
@@ -120,15 +126,15 @@ double lnL( const column_vector& _mWC )
   int n = ICAC::X.nr();
   int d = ICAC::d;
   double e = std::exp(1);
-  double kappa = pow( (boost::math::tgamma( 1./c ) )/c, -c );
- 
-  result += d;
-  result = result*log( kappa*n/(c*e) ); 
-  column_vector _mW = subm( _mWC, range(0, _mWC.nr() - 2), range(0,0) );
+  double kappa = pow( (std::tgamma( 1./c ) )/c, -c );
 
-  result = result - ( c+1 )*lnl( _mWC );
+  if( c<1e-2 )
+    c=1e-2;
 
-  return result;
+  result = d*log( kappa*n/(c*e) )/c; 
+
+  result = result - ( c+1. )*lnl( _mWC )/c;
+  return -result;
 }
 
 column_vector grad_lnl (const column_vector& args ) 
@@ -202,7 +208,6 @@ column_vector grad_lnl (const column_vector& args )
         grad_s2(j) += c*pow( abs(val), c-1. );
         der_s2_c(j) += pow( abs(val), c )*log( abs( val ) );
 
-
         for( int k=0; k<D; k++ )
         {
           der_s2(j,k) += c*pow( abs(val), c-1. )*( ICAC::X(i,k) - m(k) );
@@ -230,13 +235,13 @@ column_vector grad_lnl (const column_vector& args )
       result(k) += factor*( factor1*grad_s1(j)*W(k,j) - factor2*grad_s2(j)*W(k,j) ); 
     }
 
-    for( int j=d; j < D; j++ ) // TODO: add c once formulas become available
+    for( int j=d; j < D; j++ )  
     {
       double factor = -1. /( (c+1.)*( s1(j) + s2(j) ) );
       if( s1(j) + s2(j) == 0. )
         factor = 0.;
 
-      result(k) += factor*( grad_s1(j)*W(k,j) + grad_s2(j)*W(k,j) ); 
+      result(k) += factor*( grad_s1(j)*W(k,j) - grad_s2(j)*W(k,j) ); 
     }
   }
 
@@ -257,9 +262,9 @@ column_vector grad_lnl (const column_vector& args )
 
       result( D + p*D + k ) = factor*( -factor1*der_s1(k,p) + factor2*der_s2(k,p) ) - ( c/(c+1.) )*inv_tran_W( p, k ); 
 
-      if( d<D ) // noise terms, TODO: check with Przemek whether this is the correct formula
+      if( d<D  ) // noise terms, TODO: check with Przemek whether this is the correct formula
       {
-        result( D + p*D + k ) +=  ( der_s1(k,p) + der_s2(k,p) ) /( (c+1)*( s1(p) + s2(p) ) ); 
+        result( D + p*D + k ) +=  ( der_s1(k,p) - der_s2(k,p) ) /( (c+1)*( s1(k) + s2(k) ) ); 
       }
 
     }
@@ -267,8 +272,7 @@ column_vector grad_lnl (const column_vector& args )
 
   if( ICAC::generalized )
   {
-    result( result.nr() - 1 ) = 0.; 
-
+    result( result.nr() - 1 ) = 0.;
     for( int j=0; j<D; j++ ) 
     {
       double factor =  1. /( pow( s1(j), 1./( c + 1. ) ) + pow( s2(j), 1./( c + 1. ) ) );
@@ -288,8 +292,12 @@ column_vector grad_lnl (const column_vector& args )
 
       result( result.nr() - 1 ) += factor*sum;
     }
+
+    if( !( abs(det(W)) < 1e-2 ) )
+      result( result.nr() - 1 ) += -log( abs( det(W) ) ) / pow( (c+1.), 2. ); 
   }
 
+  cout << "grad1 = " << result << "\n";
   return result;
 }
 
@@ -301,18 +309,19 @@ column_vector grad_lnL (const column_vector& args )
   double c = args( args.nr() - 1 );
   double e = std::exp(1);
 
-  column_vector result = -(c+1)*grad_lnl( args );
+  if( c<1e-2 )
+    c=1e-2;
 
-  result( result.nr() - 1 ) += lnl( args )/c;
-  result( result.nr() - 1 ) += (log(c*e/n) - 1. + c + boost::math::digamma(1./c) )*d/c;
+  column_vector result = -(c+1.)*grad_lnl( args )/c;
+  result( result.nr() - 1 ) += lnl( args )/pow(c,2.);
+  result( result.nr() - 1 ) += (log(c*e/n) - 1. + c + boost::math::digamma(1./c) )*d/pow(c,2.);
 
-
-  return result;
-
+  // we maximize lnL
+  return -result;
 }
 
 // [[Rcpp::export(ICA)]]
-RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, double& c, int gauss_noise = 0, bool generalized = 0 ) {
+RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& WW, double& c, int gauss_noise = 0, bool generalized = 0, double minimum = -5. ) {
   std::vector< double > _X = as< std::vector<double> >( transpose( XX ) );
   ICAC::X = reshape( mat( _X ), XX.nrow(), XX.ncol() );
 
@@ -339,47 +348,49 @@ RcppExport SEXP ICA( const NumericMatrix& XX, NumericVector& mm, NumericMatrix& 
 
   // GRADIENT CHECKING
  column_vector temp_args = my_ica.args;
-/*
+
   if( ICAC::generalized )
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
-      objective_delta_stop_strategy(1e-7).be_verbose(), // Stop when the change in function() is less than 1e-7
-      lnL, grad_lnL, my_ica.args, -200.);
+      objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
+      lnL, grad_lnL, my_ica.args, minimum);
   }
   else
   {
       result = find_min(bfgs_search_strategy(),  // Use BFGS search algorithm
       objective_delta_stop_strategy(1e-7), // Stop when the change in function() is less than 1e-7
-      lnl, grad_lnl, my_ica.args, -200.);
+      lnl, grad_lnl, my_ica.args, minimum);
 
   }
-*/
-  cout << "Solution : " << my_ica.args << " with minimum " << result << "\n \n";
 
+ // cout << "Solution : " << my_ica.args << " with minimum " << result << "\n \n";
+ // GRADIENT CHECKING
   double approx_result = 1.;
 
   if( ICAC::generalized )
   {
+
+      cout << "GRAD2 " << derivative(lnL, 1e-7)(temp_args) << "\n";
       approx_result = find_min_using_approximate_derivatives(bfgs_search_strategy(),
-                                             objective_delta_stop_strategy(1e-7).be_verbose(),
-                                             lnL, temp_args, -200.);
+                                             objective_delta_stop_strategy(1e-7),
+                                             lnL, temp_args, minimum);
   }
   else
   {
+
+    cout << "GRAD2 " << derivative( lnl, 1e-7 )( temp_args ) << "\n";
       approx_result = find_min_using_approximate_derivatives(bfgs_search_strategy(),
                                              objective_delta_stop_strategy(1e-7),
-                                             lnl, temp_args, -200.);
+                                             lnl, temp_args, minimum);
   }
 
-
-  cout << "Solution : " << temp_args << " with minimum " << approx_result << "\n \n";
-
+  //cout << "Solution : " << temp_args << " with minimum " << approx_result << "\n \n";
 
  
   if( generalized )
-    c = temp_args( temp_args.nr() - 1. );
+    c = my_ica.args( my_ica.args.nr() - 1. );
 
-  matrix<double> args = reshape( temp_args, ICAC::D+1, ICAC::D );
+  matrix<double> args = reshape( my_ica.args, ICAC::D+1, ICAC::D );
 
   for( int i = 0; i < ICAC::D; i++ )
   {

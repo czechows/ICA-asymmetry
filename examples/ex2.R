@@ -22,8 +22,11 @@ data2<-c( getChannels(p2, colors = "red") )
 
 # mixing images
 sdMean=mean(c(data1,data2))
-S <- cbind(data1, data2, rnorm(n=length(data2),m=0,sd=sdMean))
-A <- matrix(c(1, 1, 2, 1, -1, 1, 2, 3, 1), 3, 3)
+print(c(data1,data2) )
+
+print(sdMean)
+S <- cbind(data1, data2, rnorm(n=length(data2),m=sdMean,sd=sdMean/10.))
+A <- matrix(c(1, 1, 2, 1, -1, 1, 2, 3, 2), 3, 3)
 X <- (S %*% A)
 
 mix1<-matrix(X[,1], nrow=size,byrow=FALSE)
@@ -45,7 +48,7 @@ invisible(readline(prompt="Plotting image mix 3. Press [enter] to continue.."))
 
 
 # ICAA magic here -- original images are retrieved!
-Snew<-ICAA(X, noise=1, generalized=0)[[1]]
+Snew<-ICAA(X, noise=1, generalized=0, minimum = 15)[[1]]
 
 plot(pixmapRGB(matrix(Snew[,1], nrow=size,byrow=FALSE), nrow=size, cellres=1),asp=1)
 invisible(readline(prompt="Plotting retrieved image 1. Press [enter] to continue.."))
